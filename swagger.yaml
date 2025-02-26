@@ -23,8 +23,6 @@ tags:
 
 paths:
 
-#  TODO: Add some kind of "extensionsSupported" array to allow a standard query of a TRQP-compliant registry that gets an answer of "what else do you support?". This may be the concept that you (@andor) were working on to extend things (aloing with versions). e.g. an object that says "I do AyraTRQP v1.2"
-
   /metadata:
     get:
       summary: Retrieve Trust Registry Metadata
@@ -266,13 +264,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
-
-#  TODO: query parameters -> put as path
-#  TODO: INCONSISTENT NAMING/RESOLVING KEY (See note right below)
-#  I am torn between recognizing/querying as ECOSYSTEM or EGF. An ecosystem is identified by an EGF_DID, and may recognize 1+ EGFs (1:1 tied EGF:EGF_DID). If I am considering Ecosystem as the main point of querying we need to standardize on ecosystem_id (or ecosystem_did) - and allow Filtering (query parameter?) on EGF_DID. If we standardize on EGF_DID we lose the first-class citizen of "ecosystem". LEANING HEAVILY to focus on ECOSYSTEM.
-
-
-# NOTE: STANDARDIZING on DIDs. TRQP is NOT opinionated. Ayra is (DIDs).
   /ecosystems/{ecosystem_did}/lookups/assuranceLevels:
     get:
       summary: Lookup Supported Assurance Levels
