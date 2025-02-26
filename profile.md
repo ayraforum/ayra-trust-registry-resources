@@ -30,7 +30,7 @@ This specification introduces the Ayra TRQP Profile that will be used to describ
 
 # **Identifier Requirements** {#identifier-requirements}
 
-## **Ecosystem Identifier**
+## **Ecosystem Identifiers**
 
 All Ecosystem Identifiers MUST be one of [Ayra Trust Network Valid DID Methods](#ayra-trust-network-valid-did-methods) with *AT LEAST* *two* required
 service endpoints that conform to the [service profile](https://github.com/trustoverip/tswg-trust-registry-service-profile/blob/main/spec.md)

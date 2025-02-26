@@ -1,0 +1,2 @@
+- [EGF DID Creator](./egf_did_creator.py) -- Tool to create a DID for your ecosystem.
+- [Trust Registry DID Creator](./tr_did_creator.py) -- Tool to create a DID for your Trust Registry
