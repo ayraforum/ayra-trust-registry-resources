@@ -1,5 +1,10 @@
 # Ayra Trust Registry Resources
 
+"The following resources are designed to support implementers and those
+interested in connecting with the Ayra Trust Network. Many of these resources
+are non-normative and serve as guides to help you understand the steps needed to
+interact with your ecosystem."
+
 ## Normative Resources
 * [Swagger YAML](./swagger.yaml) - RESTFul specification to describe the required endpoints for any TRQP compliant registry in the network.
 * [Profile](./profile.md) - Ayra Authority Verification Profile required to register into the Ayra Trust Network.
