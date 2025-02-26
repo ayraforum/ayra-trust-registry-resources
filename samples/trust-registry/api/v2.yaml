@@ -1,0 +1,279 @@
+openapi: 3.0.1
+info:
+  title: TRQP Profile API
+  version: 1.0.0
+  description: |
+    This specification defines a RESTful TRQP profile.
+    It includes endpoints for retrieving Trust Registry metadata,
+    Authorization data, verifying Entity authorization status,
+    and checking Ecosystem recognition.
+
+servers:
+  - url: https://example-trust-registry.com
+    description: Production server (example)
+  - url: https://sandbox-trust-registry.com
+    description: Sandbox server (example)
+
+paths:
+  /metadata:
+    get:
+      summary: Retrieve Trust Registry Metadata
+      description: |
+        Returns Trust Registry Metadata as a JSON object.
+      operationId: getTrustRegistryMetadata
+      parameters:
+        - name: ecosystem_id
+          in: query
+          required: false
+          description: An optional identifier specifying which ecosystem's metadata should be retrieved.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved Trust Registry Metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrustRegistryMetadata'
+        '404':
+          description: Metadata not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /entity/authorized/{target_id}/{authorization_id}/{source_id}:
+    get:
+      summary: Check Entity Authorization Status
+      description: |
+        Determines if the specified entity (`target_id`) is authorized
+        under the given authorization identifier (`authorization_id`)
+        within the specified governance framework (`source_id`).
+      operationId: checkAuthorizationStatus
+      parameters:
+        - name: target_id
+          in: path
+          required: true
+          description: Unique identifier of the entity.
+          schema:
+            type: string
+        - name: authorization_id
+          in: path
+          required: true
+          description: Authorization identifier to evaluate.
+          schema:
+            type: string
+        - name: source_id
+          in: path
+          required: true
+          description: Unique identifier of the governance framework.
+          schema:
+            type: string
+        - name: time
+          in: query
+          required: false
+          description: |
+            ISO8601/RFC3339 timestamp for authorization status evaluation.
+            Defaults to the current time if omitted.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Entity is authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationResponse'
+        '404':
+          description: Entity not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /entity/recognition/{source_id}/{target_id}:
+    get:
+      summary: Check Ecosystem Recognition
+      description: |
+        Verifies if the specified ecosystem (`target_id`) is recognized
+        under the specified governance framework (`source_id`).
+      operationId: checkEcosystemRecognition
+      parameters:
+        - name: source_id
+          in: path
+          required: true
+          description: Unique identifier of the governance framework.
+          schema:
+            type: string
+        - name: target_id
+          in: path
+          required: true
+          description: Unique identifier of the ecosystem being queried.
+          schema:
+            type: string
+        - name: time
+          in: query
+          required: false
+          description: RFC3339 timestamp indicating when recognition is checked.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Ecosystem is recognized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecognitionResponse'
+        '404':
+          description: Ecosystem not recognized or not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  schemas:
+    # ----------------------------------------------------------------------
+    # RFC 7807 Problem Details
+    # ----------------------------------------------------------------------
+    ProblemDetails:
+      type: object
+      description: |
+        A Problem Details object, as defined in [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807).
+      properties:
+        type:
+          type: string
+          format: uri
+          description: A URI reference that identifies the problem type.
+        title:
+          type: string
+          description: A short, human-readable summary of the problem.
+        status:
+          type: integer
+          description: The HTTP status code (e.g., 404 for "Not Found").
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem.
+        instance:
+          type: string
+          format: uri
+          description: A URI reference that identifies the specific occurrence of the problem.
+      additionalProperties: true
+
+    # ----------------------------------------------------------------------
+    # Trust Registry Metadata
+    # ----------------------------------------------------------------------
+    TrustRegistryMetadata:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the Trust Registry.
+        description:
+          type: string
+          maxLength: 4096
+          description: A description of the Trust Registry.
+        name:
+          type: string
+          description: Human-readable name of the Trust Registry.
+        controllers:
+          type: array
+          description: List of unique identifiers representing the controllers of the Trust Registry.
+          items:
+            type: string
+          minItems: 1
+      required:
+        - id
+        - description
+        - name
+        - controllers
+
+    # ----------------------------------------------------------------------
+    # Authorization Response
+    # ----------------------------------------------------------------------
+    AuthorizationResponse:
+      type: object
+      properties:
+        recognized:
+          type: boolean
+          description: Indicates whether the entity is recognized by the Trust Registry.
+        authorized:
+          type: boolean
+          description: Specifies whether the entity is authorized under the provided authorization ID.
+        message:
+          type: string
+          description: Additional context or information regarding the authorization status.
+        evaluated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the authorization status was evaluated.
+        response_time:
+          type: string
+          format: date-time
+          description: Timestamp when the response was generated.
+        expiry_time:
+          type: string
+          format: date-time
+          description: Timestamp when the authorization status expires (if applicable).
+        jws:
+          type: string
+          description: Signed response object as specified in https://datatracker.ietf.org/doc/html/rfc7515 from the controller of the Trust Regsitry
+      required:
+        - recognized
+        - authorized
+        - message
+        - evaluated_at
+        - response_time
+
+    # ----------------------------------------------------------------------
+    # Recognition Response
+    # ----------------------------------------------------------------------
+    RecognitionResponse:
+      type: object
+      properties:
+        recognized:
+          type: boolean
+          description: Indicates whether the ecosystem ID is recognized by the Trust Registry.
+        message:
+          type: string
+          description: Additional information regarding the recognition status.
+        evaluated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the recognition status was evaluated.
+        response_time:
+          type: string
+          format: date-time
+          description: Timestamp when the response was generated.
+        expiry_time:
+          type: string
+          format: date-time
+          description: Timestamp when the recognition status expires (if applicable).
+        jws:
+          type: string
+          description: Signed response object as specified in https://datatracker.ietf.org/doc/html/rfc7515 from the controller of the Trust Regsitry
+      required:
+        - recognized
+        - message
+        - evaluated_at
+        - response_time

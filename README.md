@@ -11,6 +11,10 @@
 * [EGF DID Creator]()
 * [Trust Registry DID Creator]()
 
+## [Sample Implementations](./samples)
+* [Sample Trust Registry](./samples/trust-registry) -- Sample Trust Registry
+* [Sample Verifier](./samples/verifier) -- Sample Trust Registry
+
 ## Tests
 * [API Conformance Test](./tests/api_conformance_test.py) - Conformance Testing Tool for testing a Trust Registry endpoint. 
 * [DID Conformance Test](./tests/did_conformance_test.py) - Checks conformance of the Ecosystem DID that is being registered. `TODO`
