@@ -9,7 +9,7 @@ info:
     and checking ecosystem recognition.
 
 servers:
-# TODO: consider sandbox-tr.ayra.technology for domain.
+  # TODO: consider sandbox-tr.ayra.technology for domain.
   - url: https://example-trust-registry.com
     description: Production server (example)
   - url: https://sandbox-trust-registry.com
@@ -22,7 +22,6 @@ tags:
     description: Ayra™ Extensions to TRQP
 
 paths:
-
   /metadata:
     get:
       summary: Retrieve Trust Registry Metadata
@@ -39,24 +38,24 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Successfully retrieved Trust Registry Metadata.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrustRegistryMetadata'
-        '404':
+                $ref: "#/components/schemas/TrustRegistryMetadata"
+        "404":
           description: Metadata not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-        '401':
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
           description: Unauthorized request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: "#/components/schemas/ProblemDetails"
 
   /entities/{entity_id}:
     get:
@@ -74,26 +73,25 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Entity information successfully retrieved.
           content:
             application/json:
               schema:
                 type: object
                 description: A JSON object containing entity information.
-        '404':
+        "404":
           description: Entity not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-        '401':
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
           description: Unauthorized request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-
+                $ref: "#/components/schemas/ProblemDetails"
 
   /entities/{entity_id}/authorization:
     get:
@@ -139,31 +137,30 @@ paths:
             type: string
             format: date-time
       responses:
-        '200':
+        "200":
           description: Authorization status successfully retrieved.
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/AuthorizationResponse'
+                  - $ref: "#/components/schemas/AuthorizationResponse"
                   - type: array
                     items:
-                      $ref: '#/components/schemas/AuthorizationResponse'
-        '404':
+                      $ref: "#/components/schemas/AuthorizationResponse"
+        "404":
           description: Entity not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-        '401':
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
           description: Unauthorized request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: "#/components/schemas/ProblemDetails"
 
-  
-  /registries/{ecosystem_did}/recognition:
+  /ecosystem/{ecosystem_did}/recognition:
     get:
       summary: Check Ecosystem Recognition
       tags:
@@ -193,27 +190,25 @@ paths:
             type: string
             format: date-time
       responses:
-        '200':
+        "200":
           description: Ecosystem recognition successfully verified.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RecognitionResponse'
-        '401':
+                $ref: "#/components/schemas/RecognitionResponse"
+        "401":
           description: Unauthorized request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-        '404':
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
           description: Ecosystem not recognized or not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: "#/components/schemas/ProblemDetails"
 
-
-  
   /ecosystems/{ecosystem_did}/recognitions:
     get:
       summary: List Recognized Ecosystems
@@ -243,27 +238,26 @@ paths:
             type: string
             format: date-time
       responses:
-        '200':
+        "200":
           description: Ecosystem recognitions retrieved successfully.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RecognitionResponse'
-        '401':
+                  $ref: "#/components/schemas/RecognitionResponse"
+        "401":
           description: Unauthorized request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-        '404':
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
           description: Ecosystem not recognized or not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
-
   /ecosystems/{ecosystem_did}/lookups/assuranceLevels:
     get:
       summary: Lookup Supported Assurance Levels
@@ -280,27 +274,27 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Supported assurance levels retrieved successfully.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AssuranceLevelResponse'
-        '401':
+                  $ref: "#/components/schemas/AssuranceLevelResponse"
+        "401":
           description: Unauthorized request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-        '404':
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
           description: Ecosystem not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-              
+                $ref: "#/components/schemas/ProblemDetails"
+
   /ecosystems/{ecosystem_did}/lookups/authorizations:
     get:
       summary: Lookup Authorizations
@@ -317,27 +311,27 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: A list of authorization responses.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AuthorizationResponse'
-        '404':
+                  $ref: "#/components/schemas/AuthorizationResponse"
+        "404":
           description: Entity not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-        '401':
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
           description: Unauthorized request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-  
+                $ref: "#/components/schemas/ProblemDetails"
+
   /egfs/{ecosystem_did}/lookups/didmethods:
     get:
       summary: Lookup Supported DID Methods
@@ -354,26 +348,26 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Supported DID Methods retrieved successfully.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DIDMethodListType'
-        '401':
+                  $ref: "#/components/schemas/DIDMethodListType"
+        "401":
           description: Unauthorized request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
-        '404':
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
           description: Ecosystem not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: "#/components/schemas/ProblemDetails"
 
 components:
   schemas:
@@ -409,7 +403,7 @@ components:
           description: Unique identifier of the Trust Registry.
         default_egf_did:
           type: string
-          description: Default EGF, identified by DID, that will be used if none is supplied in various queries. 
+          description: Default EGF, identified by DID, that will be used if none is supplied in various queries.
           #TODO: review thinking on defaultEGF_DID
         description:
           type: string
@@ -512,7 +506,7 @@ components:
         description:
           type: string
           description: Details about the assurance level.
-        
+
       required:
         - level
         - description

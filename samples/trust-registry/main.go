@@ -18,7 +18,7 @@ import (
 	"github.com/andorsk/tswg-trust-registry-protocol/reference_implementation/pkg/utils"
 )
 
-// LoadRegistry loads the trust registry data from a JSON file.
+// LoadRegistry loads the trust registry data from a JSON/YAML file.
 func LoadRegistry(path string) (*utils.TrustRegistry, error) {
 	var registry utils.TrustRegistry
 	dat, err := os.ReadFile(path)
@@ -76,18 +76,11 @@ func main() {
 		log.Fatalf("Failed to load registry: %v", err)
 	}
 
-	// Generate a DID
-	did, err := utils.GenerateDidPeer2(utils.Peer2ConfigFile{
+	// -------------------------------------
+	// 1) Generate the Trust Registry DID
+	// -------------------------------------
+	trustRegistryDID, err := utils.GenerateDidPeer2(utils.Peer2ConfigFile{
 		Services: []utils.Service{
-			{
-				ID:   "#egfURI",
-				Type: "egfURI",
-				ServiceEndpoint: utils.ServiceProfile{
-					Profile:   "https://trustoverip.org/profiles/trp/egfURI/v1",
-					URI:       baseURL + ":" + port + "/terms",
-					Integrity: "122041dd7b6443542e75701aa98a0c235951a28a0d851b11564d20022ab11d2589a8",
-				},
-			},
 			{
 				ID:   "#tr-1",
 				Type: "TRQP",
@@ -100,31 +93,63 @@ func main() {
 		},
 	})
 	if err != nil {
-		log.Fatalf("Failed to generate DID: %v", err)
+		log.Fatalf("Failed to generate Trust Registry DID: %v", err)
 	}
+	log.Printf("Generated Trust Registry DID: %s", trustRegistryDID)
 
-	log.Printf("Generated DID: %s", did)
+	// -------------------------------------
+	// 2) Generate the Ecosystem DID, referencing the Trust Registry DID
+	// -------------------------------------
+	ecosystemDID, err := utils.GenerateDidPeer2(utils.Peer2ConfigFile{
+		Services: []utils.Service{
+			{
+				ID:   "#egfURI",
+				Type: "egfURI",
+				ServiceEndpoint: utils.ServiceProfile{
+					Profile:   "https://trustoverip.org/profiles/trp/egfURI/v1",
+					URI:       baseURL + ":" + port + "/terms",
+					Integrity: "122041dd7b6443542e75701aa98a0c235951a28a0d851b11564d20022ab11d2589a8",
+				},
+			},
+			{
+				ID:   "#TRQP",
+				Type: "TRQP",
+				// Point this service endpoint's 'uri' to the Trust Registry DID
+				ServiceEndpoint: utils.ServiceProfile{
+					Profile:   "https://example.org/profiles/ecosystemService/v1",
+					URI:       trustRegistryDID,
+					Integrity: "example_integrity_hash_value",
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.Fatalf("Failed to generate Ecosystem DID: %v", err)
+	}
+	log.Printf("Generated Ecosystem DID: %s", ecosystemDID)
 
-	// Create handlers
+	// -------------------------------------
+	// Add the Ecosystem to our in-memory registry
+	// Use the Ecosystem DID as the root ecosystem
+	// -------------------------------------
 	impl := &v2trqp.TRQPHandler{Registry: registry}
 	svc := &registrysvc.TrustRegistryService{Registry: registry}
 	registryHandlers := registrysvc.NewTrustRegistryHandlers(svc)
 
-	// Add the ecosystem to the registry
-
 	eco := utils.NewEcosystem(utils.EcosystemMetadata{
-		DID:         did,
+		DID:         ecosystemDID, // root ecosystem DID
 		Type:        "Root",
 		Description: "Root ecosystem",
 	})
 
+	// Example: add an authorization type to your new root ecosystem.
 	eco.AuthorizationTypes["auth1"] = utils.AuthorizationType{
 		Name:        "auth1",
 		Description: "Authorization type 1",
 	}
 
-	err = svc.CreateEcosystem(*eco)
-	if err != nil {
+	// Create the ecosystem in the registry
+	if err := svc.CreateEcosystem(*eco); err != nil {
 		log.Fatalf("Failed to create ecosystem: %v", err)
 	}
 

@@ -32,13 +32,55 @@ type TRQPHandler struct {
 	Registry *utils.TrustRegistry
 }
 
+func (impl *TRQPHandler) GetEntityInformation(
+	w http.ResponseWriter,
+	r *http.Request,
+	entityId string,
+) {
+	writeError(w, http.StatusNotImplemented, "Not implemented", "This endpoint is not implemented.")
+}
+
+func (impl *TRQPHandler) ListEcosystemRecognitions(
+	w http.ResponseWriter,
+	r *http.Request,
+	ecosystemDID string,
+	params trqp.ListEcosystemRecognitionsParams,
+) {
+	writeError(w, http.StatusNotImplemented, "Not implemented", "This endpoint is not implemented.")
+}
+
+func (impl *TRQPHandler) LookupAuthorizations(
+	w http.ResponseWriter,
+	r *http.Request,
+	ecosystemDID string,
+) {
+	writeError(w, http.StatusNotImplemented, "Not implemented", "This endpoint is not implemented.")
+}
+
+func (impl *TRQPHandler) LookupSupportedAssuranceLevels(
+	w http.ResponseWriter,
+	r *http.Request,
+	ecosystemDID string,
+) {
+	writeError(w, http.StatusNotImplemented, "Not implemented", "This endpoint is not implemented.")
+}
+
+func (impl *TRQPHandler) LookupSupportedDIDMethods(
+	w http.ResponseWriter,
+	r *http.Request,
+	ecosystemDID string,
+) {
+	writeError(w, http.StatusNotImplemented, "Not implemented", "This endpoint is not implemented.")
+}
+
 func (impl *TRQPHandler) CheckEcosystemRecognition(
 	w http.ResponseWriter,
 	r *http.Request,
-	egfDid string,
 	ecosystemId string,
 	params trqp.CheckEcosystemRecognitionParams,
 ) {
+	egfDid := params.EgfDid
+
 	ecosystem, err := impl.Registry.GetEcosystemByDID(egfDid)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "Ecosystem not found", err.Error())
@@ -68,7 +110,6 @@ func (impl *TRQPHandler) CheckEcosystemRecognition(
 		"egf_did":       egfDid,
 		"recognized":    isRecognized,
 		"timestamp":     time.Now().UTC().Format(time.RFC3339),
-		"nonce":         params.Nonce,
 	}
 	payloadBytes, _ := json.Marshal(recognitionPayload)
 
@@ -77,8 +118,17 @@ func (impl *TRQPHandler) CheckEcosystemRecognition(
 		writeError(w, http.StatusInternalServerError, "Failed to sign payload", err.Error())
 		return
 	}
+	expiry := time.Now().Add(time.Hour)
 
-	resp := trqp.RecognitionResponseJWS{Jws: jws}
+	resp := trqp.RecognitionResponse{
+		EgfDid:       &ecosystem.Metadata.DID,
+		EvaluatedAt:  time.Now(),
+		ExpiryTime:   &expiry,
+		Message:      "Ecosystem recognition evaluation",
+		Recognized:   isRecognized,
+		ResponseTime: time.Now(),
+		Jws:          &jws,
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
@@ -87,10 +137,11 @@ func (impl *TRQPHandler) CheckAuthorizationStatus(
 	w http.ResponseWriter,
 	r *http.Request,
 	entityId string,
-	authorizationId string,
-	egfDid string,
 	params trqp.CheckAuthorizationStatusParams,
 ) {
+	authorizationId := params.AuthorizationId
+	egfDid := params.EcosystemDid
+
 	ecosystem, err := impl.Registry.GetEcosystemByDID(egfDid)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "Ecosystem not found", err.Error())
@@ -123,7 +174,6 @@ func (impl *TRQPHandler) CheckAuthorizationStatus(
 		"authorization_id": authorizationId,
 		"authorized":       authorized,
 		"timestamp":        time.Now().UTC().Format(time.RFC3339),
-		"nonce":            params.Nonce,
 	}
 	payloadBytes, _ := json.Marshal(authorizationPayload)
 
@@ -133,25 +183,24 @@ func (impl *TRQPHandler) CheckAuthorizationStatus(
 		return
 	}
 
-	resp := trqp.AuthorizationResponseJWS{Jws: jws}
+	expiry := time.Now().Add(time.Hour)
+	resp := trqp.AuthorizationResponse{
+		Authorized:   authorized,
+		EgfDid:       &egfDid,
+		ExpiryTime:   &expiry,
+		Message:      "Authorization status evaluation",
+		Recognized:   true,
+		ResponseTime: time.Now(),
+		Jws:          &jws,
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
 
-func (impl *TRQPHandler) GetTrustRegistryMetadata(w http.ResponseWriter, r *http.Request) {
-	metadataBytes, err := json.Marshal(impl.Registry.Metadata)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "Metadata serialization error", err.Error())
-		return
+func (impl *TRQPHandler) GetTrustRegistryMetadata(w http.ResponseWriter, r *http.Request, params trqp.GetTrustRegistryMetadataParams) {
+	resp := trqp.TrustRegistryMetadata{
+		Name: impl.Registry.Metadata.Name,
 	}
-
-	jws, err := signPayload(metadataBytes)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "Failed to sign payload", err.Error())
-		return
-	}
-
-	resp := trqp.TrustRegistryMetadataJWS{Jws: jws}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
@@ -174,9 +223,10 @@ func signPayload(payload []byte) (string, error) {
 
 func writeError(w http.ResponseWriter, code int, errShort, details string) {
 	w.WriteHeader(code)
-	resp := trqp.Error{
-		Error:   errShort,
-		Details: &details,
+	resp := trqp.ProblemDetails{
+		Status: &code,
+		Title:  &errShort,
+		Detail: &details,
 	}
 	json.NewEncoder(w).Encode(resp)
 }

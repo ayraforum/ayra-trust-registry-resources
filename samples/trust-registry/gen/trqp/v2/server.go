@@ -4,6 +4,7 @@
 package trqp
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -12,84 +13,375 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
-// AuthorizationResponseJWS A JWS wrapper for the AuthorizationResponse.
-type AuthorizationResponseJWS struct {
-	// Jws The JWS compact or JSON serialization containing the AuthorizationResponse.
-	Jws string `json:"jws"`
+// AssuranceLevelResponse defines model for AssuranceLevelResponse.
+type AssuranceLevelResponse struct {
+	// AssuranceLevel The assurance level.
+	AssuranceLevel *string `json:"assurance_level,omitempty"`
+
+	// Description Details about the assurance level.
+	Description string `json:"description"`
+
+	// EgfDid EGF DID this assurance level applies to.
+	EgfDid *string `json:"egf_did,omitempty"`
 }
 
-// Error A generic error response.
-type Error struct {
-	// Details (Optional) Additional details about the error.
-	Details *string `json:"details,omitempty"`
-
-	// Error A short error code or message describing the error.
-	Error string `json:"error"`
+// AssuranceLevelType Creates assurance level as a top-level/first-class-citizen of a Trust Registry. AssuranceLevel values
+// MUST be defined in an EGF if they are used.
+type AssuranceLevelType struct {
+	Description string `json:"description"`
+	Identifier  string `json:"identifier"`
+	Name        string `json:"name"`
 }
 
-// RecognitionResponseJWS A JWS wrapper for the RecognitionResponse.
-type RecognitionResponseJWS struct {
-	// Jws The JWS compact or JSON serialization containing the RecognitionResponse.
-	Jws string `json:"jws"`
+// AuthorizationResponse defines model for AuthorizationResponse.
+type AuthorizationResponse struct {
+	// Authorized Specifies whether the entity is authorized under the provided authorization ID.
+	Authorized bool `json:"authorized"`
+
+	// EgfDid EGF DID this authorization response relates to.
+	EgfDid *string `json:"egf_did,omitempty"`
+
+	// EvaluatedAt Timestamp when the authorization status was evaluated.
+	EvaluatedAt time.Time `json:"evaluated_at"`
+
+	// ExpiryTime Timestamp when the authorization status expires (if applicable).
+	ExpiryTime *time.Time `json:"expiry_time,omitempty"`
+
+	// Jws Signed response object as specified in [RFC 7515](https://datatracker.ietf.org/doc/html/rfc7515) from the controller of the Trust Registry.
+	Jws *string `json:"jws,omitempty"`
+
+	// Message Additional context or information regarding the authorization status.
+	Message string `json:"message"`
+
+	// Recognized Indicates whether the entity is recognized by the Trust Registry.
+	Recognized bool `json:"recognized"`
+
+	// ResponseTime Timestamp when the response was generated.
+	ResponseTime time.Time `json:"response_time"`
 }
 
-// TrustRegistryMetadataJWS A JSON Web Signature (JWS) encapsulated Trust Registry Metadata object.
-type TrustRegistryMetadataJWS struct {
-	// Jws The JWS compact or JSON serialization containing the Trust Registry Metadata.
-	Jws string `json:"jws"`
+// DIDMethodListType defines model for DIDMethodListType.
+type DIDMethodListType = []DIDMethodType
+
+// DIDMethodType DID Method supported by the trust registry. May include the maximum
+type DIDMethodType struct {
+	// EgfDid EGF DID this DID Method applies to.
+	EgfDid *string `json:"egf_did,omitempty"`
+
+	// Identifier as "maintained" at https://w3c.github.io/did-spec-registries/#did-methods TODO: do better...
+	Identifier string `json:"identifier"`
+
+	// MaximumAssuranceLevel A DID Method may, due to technical or human trust considerations be limited in the assurance
+	// level that it can provide.
+	MaximumAssuranceLevel *AssuranceLevelType `json:"maximumAssuranceLevel,omitempty"`
+}
+
+// ProblemDetails A Problem Details object as defined in [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807).
+type ProblemDetails struct {
+	// Detail A human-readable explanation specific to this occurrence of the problem.
+	Detail *string `json:"detail,omitempty"`
+
+	// Instance A URI reference that identifies the specific occurrence of the problem.
+	Instance *string `json:"instance,omitempty"`
+
+	// Status The HTTP status code (e.g., 404 for "Not Found").
+	Status *int `json:"status,omitempty"`
+
+	// Title A short, human-readable summary of the problem.
+	Title *string `json:"title,omitempty"`
+
+	// Type A URI reference that identifies the problem type.
+	Type                 *string                `json:"type,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// RecognitionResponse defines model for RecognitionResponse.
+type RecognitionResponse struct {
+	// EgfDid EGF DID this recognition applies to.
+	EgfDid *string `json:"egf_did,omitempty"`
+
+	// EvaluatedAt Timestamp when the recognition status was evaluated.
+	EvaluatedAt time.Time `json:"evaluated_at"`
+
+	// ExpiryTime Timestamp when the recognition status expires (if applicable).
+	ExpiryTime *time.Time `json:"expiry_time,omitempty"`
+
+	// Jws Signed response object as specified in [RFC 7515](https://datatracker.ietf.org/doc/html/rfc7515) from the controller of the Trust Registry.
+	Jws *string `json:"jws,omitempty"`
+
+	// Message Additional information regarding the recognition status.
+	Message string `json:"message"`
+
+	// Recognized Indicates whether the ecosystem ID is recognized by the Trust Registry.
+	Recognized bool `json:"recognized"`
+
+	// ResponseTime Timestamp when the response was generated.
+	ResponseTime time.Time `json:"response_time"`
+}
+
+// TrustRegistryMetadata defines model for TrustRegistryMetadata.
+type TrustRegistryMetadata struct {
+	// Controllers List of unique identifiers representing the controllers of the Trust Registry.
+	Controllers []string `json:"controllers"`
+
+	// DefaultEgfDid Default EGF, identified by DID, that will be used if none is supplied in various queries.
+	DefaultEgfDid *string `json:"default_egf_did,omitempty"`
+
+	// Description A description of the Trust Registry.
+	Description string `json:"description"`
+
+	// Id Unique identifier of the Trust Registry.
+	Id string `json:"id"`
+
+	// Name Human-readable name of the Trust Registry.
+	Name string `json:"name"`
 }
 
 // CheckEcosystemRecognitionParams defines parameters for CheckEcosystemRecognition.
 type CheckEcosystemRecognitionParams struct {
-	// Time Timestamp in RFC3339 format indicating the point in time of recognition.
-	Time *time.Time `form:"time,omitempty" json:"time,omitempty"`
+	// EgfDid Unique identifier of the governance framework. Defaults to single egf_did of the Trust Registry itself.
+	EgfDid string `form:"egf_did" json:"egf_did"`
 
-	// Nonce A unique client-generated nonce to prevent replay attacks.
-	Nonce *string `form:"nonce,omitempty" json:"nonce,omitempty"`
+	// Time RFC3339 timestamp indicating when recognition is checked. Defaults to "now" on system being queried.
+	Time *time.Time `form:"time,omitempty" json:"time,omitempty"`
+}
+
+// ListEcosystemRecognitionsParams defines parameters for ListEcosystemRecognitions.
+type ListEcosystemRecognitionsParams struct {
+	// EgfDid Optional identifier of the governance framework to filter the response. All EGFs supported by the ecosystem will be used when not provided.
+	EgfDid *string `form:"egf_did,omitempty" json:"egf_did,omitempty"`
+
+	// Time RFC3339 timestamp indicating when recognition is checked.
+	Time *time.Time `form:"time,omitempty" json:"time,omitempty"`
 }
 
 // CheckAuthorizationStatusParams defines parameters for CheckAuthorizationStatus.
 type CheckAuthorizationStatusParams struct {
-	// Time The ISO8601/RFC3339 timestamp at which the authorization status is requested.
-	// If omitted, the server MAY assume the current time or another default.
-	Time *time.Time `form:"time,omitempty" json:"time,omitempty"`
+	// AuthorizationId Authorization identifier to evaluate.
+	AuthorizationId string `form:"authorization_id" json:"authorization_id"`
 
-	// Nonce A unique client-generated nonce to prevent replay attacks.
-	Nonce string `form:"nonce" json:"nonce"`
+	// EcosystemDid Unique identifier of the governance framework.
+	EcosystemDid string `form:"ecosystem_did" json:"ecosystem_did"`
+
+	// All Whether to return a list of authorizations.
+	All bool `form:"all" json:"all"`
+
+	// Time ISO8601/RFC3339 timestamp for authorization status evaluation.
+	// Defaults to the current time if omitted.
+	Time *time.Time `form:"time,omitempty" json:"time,omitempty"`
+}
+
+// GetTrustRegistryMetadataParams defines parameters for GetTrustRegistryMetadata.
+type GetTrustRegistryMetadataParams struct {
+	// EgfDid An optional identifier specifying which ecosystem's metadata should be retrieved.
+	EgfDid *string `form:"egf_did,omitempty" json:"egf_did,omitempty"`
+}
+
+// Getter for additional properties for ProblemDetails. Returns the specified
+// element and whether it was found
+func (a ProblemDetails) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for ProblemDetails
+func (a *ProblemDetails) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for ProblemDetails to handle AdditionalProperties
+func (a *ProblemDetails) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["detail"]; found {
+		err = json.Unmarshal(raw, &a.Detail)
+		if err != nil {
+			return fmt.Errorf("error reading 'detail': %w", err)
+		}
+		delete(object, "detail")
+	}
+
+	if raw, found := object["instance"]; found {
+		err = json.Unmarshal(raw, &a.Instance)
+		if err != nil {
+			return fmt.Errorf("error reading 'instance': %w", err)
+		}
+		delete(object, "instance")
+	}
+
+	if raw, found := object["status"]; found {
+		err = json.Unmarshal(raw, &a.Status)
+		if err != nil {
+			return fmt.Errorf("error reading 'status': %w", err)
+		}
+		delete(object, "status")
+	}
+
+	if raw, found := object["title"]; found {
+		err = json.Unmarshal(raw, &a.Title)
+		if err != nil {
+			return fmt.Errorf("error reading 'title': %w", err)
+		}
+		delete(object, "title")
+	}
+
+	if raw, found := object["type"]; found {
+		err = json.Unmarshal(raw, &a.Type)
+		if err != nil {
+			return fmt.Errorf("error reading 'type': %w", err)
+		}
+		delete(object, "type")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for ProblemDetails to handle AdditionalProperties
+func (a ProblemDetails) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Detail != nil {
+		object["detail"], err = json.Marshal(a.Detail)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'detail': %w", err)
+		}
+	}
+
+	if a.Instance != nil {
+		object["instance"], err = json.Marshal(a.Instance)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'instance': %w", err)
+		}
+	}
+
+	if a.Status != nil {
+		object["status"], err = json.Marshal(a.Status)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'status': %w", err)
+		}
+	}
+
+	if a.Title != nil {
+		object["title"], err = json.Marshal(a.Title)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'title': %w", err)
+		}
+	}
+
+	if a.Type != nil {
+		object["type"], err = json.Marshal(a.Type)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'type': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
 }
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Lookup Supported Assurance Levels
+	// (GET /ecosystems/{ecosystem_did}/lookups/assuranceLevels)
+	LookupSupportedAssuranceLevels(w http.ResponseWriter, r *http.Request, ecosystemDid string)
+	// Lookup Authorizations
+	// (GET /ecosystems/{ecosystem_did}/lookups/authorizations)
+	LookupAuthorizations(w http.ResponseWriter, r *http.Request, ecosystemDid string)
 	// Check Ecosystem Recognition
-	// (GET /ecosystem/recognition/{egf_did}/{ecosystem_id})
-	CheckEcosystemRecognition(w http.ResponseWriter, r *http.Request, egfDid string, ecosystemId string, params CheckEcosystemRecognitionParams)
+	// (GET /ecosystems/{ecosystem_did}/recognition)
+	CheckEcosystemRecognition(w http.ResponseWriter, r *http.Request, ecosystemDid string, params CheckEcosystemRecognitionParams)
+	// List Recognized Ecosystems
+	// (GET /ecosystems/{ecosystem_did}/recognitions)
+	ListEcosystemRecognitions(w http.ResponseWriter, r *http.Request, ecosystemDid string, params ListEcosystemRecognitionsParams)
+	// Lookup Supported DID Methods
+	// (GET /egfs/{ecosystem_did}/lookups/didmethods)
+	LookupSupportedDIDMethods(w http.ResponseWriter, r *http.Request, ecosystemDid string)
+	// Retrieve Entity Information
+	// (GET /entities/{entity_id})
+	GetEntityInformation(w http.ResponseWriter, r *http.Request, entityId string)
 	// Check Entity Authorization Status
-	// (GET /entity/authorized/{entity_id}/{authorization_id}/{egf_did})
-	CheckAuthorizationStatus(w http.ResponseWriter, r *http.Request, entityId string, authorizationId string, egfDid string, params CheckAuthorizationStatusParams)
+	// (GET /entities/{entity_id}/authorization)
+	CheckAuthorizationStatus(w http.ResponseWriter, r *http.Request, entityId string, params CheckAuthorizationStatusParams)
 	// Retrieve Trust Registry Metadata
 	// (GET /metadata)
-	GetTrustRegistryMetadata(w http.ResponseWriter, r *http.Request)
+	GetTrustRegistryMetadata(w http.ResponseWriter, r *http.Request, params GetTrustRegistryMetadataParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
 
+// Lookup Supported Assurance Levels
+// (GET /ecosystems/{ecosystem_did}/lookups/assuranceLevels)
+func (_ Unimplemented) LookupSupportedAssuranceLevels(w http.ResponseWriter, r *http.Request, ecosystemDid string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Lookup Authorizations
+// (GET /ecosystems/{ecosystem_did}/lookups/authorizations)
+func (_ Unimplemented) LookupAuthorizations(w http.ResponseWriter, r *http.Request, ecosystemDid string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // Check Ecosystem Recognition
-// (GET /ecosystem/recognition/{egf_did}/{ecosystem_id})
-func (_ Unimplemented) CheckEcosystemRecognition(w http.ResponseWriter, r *http.Request, egfDid string, ecosystemId string, params CheckEcosystemRecognitionParams) {
+// (GET /ecosystems/{ecosystem_did}/recognition)
+func (_ Unimplemented) CheckEcosystemRecognition(w http.ResponseWriter, r *http.Request, ecosystemDid string, params CheckEcosystemRecognitionParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// List Recognized Ecosystems
+// (GET /ecosystems/{ecosystem_did}/recognitions)
+func (_ Unimplemented) ListEcosystemRecognitions(w http.ResponseWriter, r *http.Request, ecosystemDid string, params ListEcosystemRecognitionsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Lookup Supported DID Methods
+// (GET /egfs/{ecosystem_did}/lookups/didmethods)
+func (_ Unimplemented) LookupSupportedDIDMethods(w http.ResponseWriter, r *http.Request, ecosystemDid string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Retrieve Entity Information
+// (GET /entities/{entity_id})
+func (_ Unimplemented) GetEntityInformation(w http.ResponseWriter, r *http.Request, entityId string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // Check Entity Authorization Status
-// (GET /entity/authorized/{entity_id}/{authorization_id}/{egf_did})
-func (_ Unimplemented) CheckAuthorizationStatus(w http.ResponseWriter, r *http.Request, entityId string, authorizationId string, egfDid string, params CheckAuthorizationStatusParams) {
+// (GET /entities/{entity_id}/authorization)
+func (_ Unimplemented) CheckAuthorizationStatus(w http.ResponseWriter, r *http.Request, entityId string, params CheckAuthorizationStatusParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // Retrieve Trust Registry Metadata
 // (GET /metadata)
-func (_ Unimplemented) GetTrustRegistryMetadata(w http.ResponseWriter, r *http.Request) {
+func (_ Unimplemented) GetTrustRegistryMetadata(w http.ResponseWriter, r *http.Request, params GetTrustRegistryMetadataParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -102,32 +394,90 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
+// LookupSupportedAssuranceLevels operation middleware
+func (siw *ServerInterfaceWrapper) LookupSupportedAssuranceLevels(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "ecosystem_did" -------------
+	var ecosystemDid string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "ecosystem_did", runtime.ParamLocationPath, chi.URLParam(r, "ecosystem_did"), &ecosystemDid)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ecosystem_did", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.LookupSupportedAssuranceLevels(w, r, ecosystemDid)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// LookupAuthorizations operation middleware
+func (siw *ServerInterfaceWrapper) LookupAuthorizations(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "ecosystem_did" -------------
+	var ecosystemDid string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "ecosystem_did", runtime.ParamLocationPath, chi.URLParam(r, "ecosystem_did"), &ecosystemDid)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ecosystem_did", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.LookupAuthorizations(w, r, ecosystemDid)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 // CheckEcosystemRecognition operation middleware
 func (siw *ServerInterfaceWrapper) CheckEcosystemRecognition(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// ------------- Path parameter "egf_did" -------------
-	var egfDid string
+	// ------------- Path parameter "ecosystem_did" -------------
+	var ecosystemDid string
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "egf_did", runtime.ParamLocationPath, chi.URLParam(r, "egf_did"), &egfDid)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "ecosystem_did", runtime.ParamLocationPath, chi.URLParam(r, "ecosystem_did"), &ecosystemDid)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "egf_did", Err: err})
-		return
-	}
-
-	// ------------- Path parameter "ecosystem_id" -------------
-	var ecosystemId string
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "ecosystem_id", runtime.ParamLocationPath, chi.URLParam(r, "ecosystem_id"), &ecosystemId)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ecosystem_id", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ecosystem_did", Err: err})
 		return
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params CheckEcosystemRecognitionParams
+
+	// ------------- Required query parameter "egf_did" -------------
+
+	if paramValue := r.URL.Query().Get("egf_did"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "egf_did"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "egf_did", r.URL.Query(), &params.EgfDid)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "egf_did", Err: err})
+		return
+	}
 
 	// ------------- Optional query parameter "time" -------------
 
@@ -137,16 +487,105 @@ func (siw *ServerInterfaceWrapper) CheckEcosystemRecognition(w http.ResponseWrit
 		return
 	}
 
-	// ------------- Optional query parameter "nonce" -------------
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CheckEcosystemRecognition(w, r, ecosystemDid, params)
+	}))
 
-	err = runtime.BindQueryParameter("form", true, false, "nonce", r.URL.Query(), &params.Nonce)
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// ListEcosystemRecognitions operation middleware
+func (siw *ServerInterfaceWrapper) ListEcosystemRecognitions(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "ecosystem_did" -------------
+	var ecosystemDid string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "ecosystem_did", runtime.ParamLocationPath, chi.URLParam(r, "ecosystem_did"), &ecosystemDid)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "nonce", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ecosystem_did", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListEcosystemRecognitionsParams
+
+	// ------------- Optional query parameter "egf_did" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "egf_did", r.URL.Query(), &params.EgfDid)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "egf_did", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "time" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "time", r.URL.Query(), &params.Time)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "time", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CheckEcosystemRecognition(w, r, egfDid, ecosystemId, params)
+		siw.Handler.ListEcosystemRecognitions(w, r, ecosystemDid, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// LookupSupportedDIDMethods operation middleware
+func (siw *ServerInterfaceWrapper) LookupSupportedDIDMethods(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "ecosystem_did" -------------
+	var ecosystemDid string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "ecosystem_did", runtime.ParamLocationPath, chi.URLParam(r, "ecosystem_did"), &ecosystemDid)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ecosystem_did", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.LookupSupportedDIDMethods(w, r, ecosystemDid)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetEntityInformation operation middleware
+func (siw *ServerInterfaceWrapper) GetEntityInformation(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "entity_id" -------------
+	var entityId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "entity_id", runtime.ParamLocationPath, chi.URLParam(r, "entity_id"), &entityId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "entity_id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetEntityInformation(w, r, entityId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -171,26 +610,53 @@ func (siw *ServerInterfaceWrapper) CheckAuthorizationStatus(w http.ResponseWrite
 		return
 	}
 
-	// ------------- Path parameter "authorization_id" -------------
-	var authorizationId string
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CheckAuthorizationStatusParams
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "authorization_id", runtime.ParamLocationPath, chi.URLParam(r, "authorization_id"), &authorizationId)
+	// ------------- Required query parameter "authorization_id" -------------
+
+	if paramValue := r.URL.Query().Get("authorization_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "authorization_id"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "authorization_id", r.URL.Query(), &params.AuthorizationId)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "authorization_id", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "egf_did" -------------
-	var egfDid string
+	// ------------- Required query parameter "ecosystem_did" -------------
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "egf_did", runtime.ParamLocationPath, chi.URLParam(r, "egf_did"), &egfDid)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "egf_did", Err: err})
+	if paramValue := r.URL.Query().Get("ecosystem_did"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "ecosystem_did"})
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params CheckAuthorizationStatusParams
+	err = runtime.BindQueryParameter("form", true, true, "ecosystem_did", r.URL.Query(), &params.EcosystemDid)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ecosystem_did", Err: err})
+		return
+	}
+
+	// ------------- Required query parameter "all" -------------
+
+	if paramValue := r.URL.Query().Get("all"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "all"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "all", r.URL.Query(), &params.All)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "all", Err: err})
+		return
+	}
 
 	// ------------- Optional query parameter "time" -------------
 
@@ -200,23 +666,8 @@ func (siw *ServerInterfaceWrapper) CheckAuthorizationStatus(w http.ResponseWrite
 		return
 	}
 
-	// ------------- Required query parameter "nonce" -------------
-
-	if paramValue := r.URL.Query().Get("nonce"); paramValue != "" {
-
-	} else {
-		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "nonce"})
-		return
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "nonce", r.URL.Query(), &params.Nonce)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "nonce", Err: err})
-		return
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CheckAuthorizationStatus(w, r, entityId, authorizationId, egfDid, params)
+		siw.Handler.CheckAuthorizationStatus(w, r, entityId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -230,8 +681,21 @@ func (siw *ServerInterfaceWrapper) CheckAuthorizationStatus(w http.ResponseWrite
 func (siw *ServerInterfaceWrapper) GetTrustRegistryMetadata(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTrustRegistryMetadataParams
+
+	// ------------- Optional query parameter "egf_did" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "egf_did", r.URL.Query(), &params.EgfDid)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "egf_did", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetTrustRegistryMetadata(w, r)
+		siw.Handler.GetTrustRegistryMetadata(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -355,10 +819,25 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/ecosystem/recognition/{egf_did}/{ecosystem_id}", wrapper.CheckEcosystemRecognition)
+		r.Get(options.BaseURL+"/ecosystems/{ecosystem_did}/lookups/assuranceLevels", wrapper.LookupSupportedAssuranceLevels)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/entity/authorized/{entity_id}/{authorization_id}/{egf_did}", wrapper.CheckAuthorizationStatus)
+		r.Get(options.BaseURL+"/ecosystems/{ecosystem_did}/lookups/authorizations", wrapper.LookupAuthorizations)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/ecosystems/{ecosystem_did}/recognition", wrapper.CheckEcosystemRecognition)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/ecosystems/{ecosystem_did}/recognitions", wrapper.ListEcosystemRecognitions)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/egfs/{ecosystem_did}/lookups/didmethods", wrapper.LookupSupportedDIDMethods)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/entities/{entity_id}", wrapper.GetEntityInformation)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/entities/{entity_id}/authorization", wrapper.CheckAuthorizationStatus)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/metadata", wrapper.GetTrustRegistryMetadata)
