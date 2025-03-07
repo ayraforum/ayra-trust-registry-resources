@@ -1,0 +1,32 @@
+{
+    "specs": [
+        {
+            "title": "Ayra Implementers Guide",
+            "spec_directory": "./guides",
+            "output_path": "./dist/guides",
+            "markdown_paths": ["implementers_guide.md"],
+            "logo": "https://media.licdn.com/dms/image/v2/D560BAQFhtzSp1wiEgg/company-logo_200_200/company-logo_200_200/0/1737038504630/ayra_forum_logo?e=1749081600&v=beta&t=0NHfG8Z0ByMNNQxrxwrsA-gf7l-Iv6Hi19uMiOx_KPc",
+            "katex": false,
+            "source": {
+                "host": "github",
+                "account": "ayraforum",
+                "repo": "ayra-trust-registry-resources"
+            },
+            "external_specs": []
+        },
+        {
+            "title": "Ayra Authority Verification Profile",
+            "spec_directory": "./",
+            "output_path": "./dist",
+            "markdown_paths": ["profile.md"],
+            "logo": "https://media.licdn.com/dms/image/v2/D560BAQFhtzSp1wiEgg/company-logo_200_200/company-logo_200_200/0/1737038504630/ayra_forum_logo?e=1749081600&v=beta&t=0NHfG8Z0ByMNNQxrxwrsA-gf7l-Iv6Hi19uMiOx_KPc",
+            "katex": false,
+            "source": {
+                "host": "github",
+                "account": "ayraforum",
+                "repo": "ayra-trust-registry-resources"
+            },
+            "external_specs": []
+        }
+    ]
+}
