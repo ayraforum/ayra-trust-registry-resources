@@ -13,8 +13,7 @@ are non-normative and serve as guides to help you understand the steps needed to
 * [Implementers Guide](./guides/implementers_guide.md) - Implementation guide to connect to the Ayra Trust Network.
 
 ## [Tools](./tools)
-* [EGF DID Creator](./tools/egf_did_creator.py) -- Create an Ayra Profile aligned DID for an ecosystem. 
-* [Trust Registry DID Creator](./tools/trust_registry_did_creator.py) -- Create an Ayra Profile aligned DID for a Trust Registry. `TODO`
+* [EGF DID Creator](./tools/did_creator_ui.py) -- Create an Ayra Profile aligned DID for an ecosystem. 
 
 ## [Samples](./samples)
 * [Sample Trust Registry](./samples/trust-registry) -- Sample Trust Registry
