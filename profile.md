@@ -12,6 +12,8 @@ This specification introduces the Ayra TRQP Profile that will be used to describ
 | **Version** | **Draft v0.0.2** |
 | **Table Of Contents** |  [Profile Overview](#profile-overview) [Identifier Requirements](#identifier-requirements) [Security and Privacy Requirements](#security-and-privacy-requirements) [Protocol Requirements](#protocol-requirements) [Roles](#roles) [Sample Pattern](?tab=t.q9xo7eqyr0bz#heading=h.u96dh747m6a) [Versioning and Backwards Compatibility](#versioning-and-backwards-compatibility)  |
 
+Learn more at the [Implementers Guide](https://ayraforum.github.io/ayra-trust-registry-resources/guides/)
+
 # **Profile Overview**  {#profile-overview}
 
 | Component | Authority Verification Profile API Based |
@@ -38,7 +40,6 @@ specification.
 
 1. A service endpoint that points to the Ecosystem Governance Framework’s documentation. The service profile url pointer is to [https://ayra.forum/profiles/trqp/egfURI/v1](https://ayra.forum/profiles/trqp/egfURI/v1) with hash \<TODO\>.  
 2. A service endpoint that points to the DID of the Trust Registry that is TRQP enabled. The service profile url pointer is to [https://ayra.forum/profiles/trqp/tr/v1](https://ayra.forum/profiles/trqp/egfURI/v1) with hash \<TODO\>.  
-   
 
 Only valid ecosystem controllers are allowed to register the ecosystem with the
 Ayra Trust Network. 
@@ -46,14 +47,14 @@ Ayra Trust Network.
 ## **Trust Registry Identifier**
 
 All Trust Registries MUST be a DID with at least *one* service endpoint with one
-service profile. The service profile url pointer is to
+service profile. The [service profile](https://github.com/trustoverip/tswg-trust-registry-service-profile) url pointer is to
 [https://ayra.forum/profiles/trqp/tr/v1](https://ayra.forum/profiles/trqp/egfURI/v1)
 with hash \<TODO\>. 
 
 ## **Cluster Identifier**
 
 All Cluster Identifiers MUST be a DID with at least *one* service endpoint with
-one service profile.The service profile url pointer is to
+one service profile.The [service profile](https://github.com/trustoverip/tswg-trust-registry-service-profile) url pointer is to
 [https://ayra.forum/profiles/trqp/tr/v1](https://ayra.forum/profiles/trqp/egfURI/v1)
 with hash \<TODO\>.
 
@@ -88,10 +89,11 @@ Ayra Trust Network’s DID. The ATN DID **MUST** be configured to :
 
 **did:webvh:ayra.forum** 
 
-Valid metaregistries under the Ayra Trust Network are currently hosted at
-did:webvh:arya.forum\#valid-trust-registries
+Valid trust registries that serve the metaregistry state of the Ayra Trust
+Network will be represented as the TrustRegistry service endpoints in the DID
+Document.
 
-# **Roles** {#roles}
+# **Roles** 
 
 | Persona | Description |
 | :---- | :---- |
@@ -106,6 +108,8 @@ When the profile version is updated, the service profile document will also
 update, providing a hash. 
 
 Backward compatibility requirements will be determined by future updates.
+
+TRQP versioning is handled by the service profiles.
 
 # **Authorized registries lookup protocol**
 
@@ -142,10 +146,607 @@ https://ayra.forum/profiles/trqp/tr/v1
 
 # **Additional API Requirements**
 
- Described
- [here](./swagger.yaml)
+<details>
+<summary>Click to View the OpenAPI 3.0 Specification</summary>
 
-* /ecosystems/{ecosystem\_did}/lookups/assuranceLevels : A list of available assurance levels.
-* /ecosystems/{ecosystem\_did}/lookups/authorizations: A list of available authorization types.
-* /egfs/{ecosystem\_did}/lookups/didmethods: A list of supported DID Methods.
-* /entities/{entity\_id}: Additional entity information.
+```yaml
+openapi: 3.0.1
+info:
+  title: Ayra TRQP Profile API
+  version: 1.0.0
+  description: >
+    This specification defines a RESTful TRQP profile for use in the Ayra Trust Network.
+    It includes endpoints for retrieving Trust Registry metadata,
+    authorization data, verifying entity authorization status,
+    and checking ecosystem recognition.
+
+servers:
+  - url: https://example-trust-registry.com
+    description: Production server (example)
+  - url: https://sandbox-trust-registry.com
+    description: Sandbox server (example)
+
+tags:
+  - name: trqp
+    description: TRQP Compliant Queries
+  - name: extensions
+    description: Ayra Extensions to TRQP
+
+paths:
+  /metadata:
+    get:
+      summary: Retrieve Trust Registry Metadata
+      tags:
+        - trqp
+      description: Returns Trust Registry Metadata as a JSON object.
+      operationId: getTrustRegistryMetadata
+      parameters:
+        - name: egf_did
+          in: query
+          required: false
+          description: >
+            An optional identifier specifying which ecosystem's
+            metadata should be retrieved.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved Trust Registry Metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrustRegistryMetadata'
+        '404':
+          description: Metadata not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /entities/{entity_id}:
+    get:
+      summary: Retrieve Entity Information
+      tags:
+        - extensions
+      description: Retrieves information about a specific entity.
+      operationId: getEntityInformation
+      parameters:
+        - name: entity_id
+          in: path
+          required: true
+          description: A unique identifier for the entity.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Entity information successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A JSON object containing entity information.
+        '404':
+          description: Entity not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /entities/{entity_id}/authorization:
+    get:
+      summary: Check Entity Authorization Status
+      tags:
+        - trqp
+      description: >
+        Determines if the specified entity (entity_id) is authorized
+        under the given authorization identifier (authorization_id)
+        within the specified governance framework (ecosystem_did).
+        Optionally, returns a list of authorizations if all is true.
+      operationId: checkAuthorizationStatus
+      parameters:
+        - name: entity_id
+          in: path
+          required: true
+          description: Unique identifier of the entity.
+          schema:
+            type: string
+        - name: authorization_id
+          in: query
+          required: true
+          description: Authorization identifier to evaluate.
+          schema:
+            type: string
+        - name: ecosystem_did
+          in: query
+          required: true
+          description: Unique identifier of the governance framework.
+          schema:
+            type: string
+        - name: all
+          in: query
+          required: true
+          description: Whether to return a list of authorizations.
+          schema:
+            type: boolean
+        - name: time
+          in: query
+          required: false
+          description: >
+            ISO8601/RFC3339 timestamp for authorization status
+            evaluation. Defaults to the current time if omitted.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Authorization status successfully retrieved.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AuthorizationResponse'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/AuthorizationResponse'
+        '404':
+          description: Entity not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /registries/{ecosystem_did}/recognition:
+    get:
+      summary: Check Ecosystem Recognition
+      tags:
+        - trqp
+      description: >
+        Verifies if the specified ecosystem (egf_target) is recognized
+        under the given governance framework (egf_source).
+      operationId: checkEcosystemRecognition
+      parameters:
+        - name: ecosystem_did
+          in: path
+          required: true
+          description: Unique identifier of the ecosystem being queried.
+          schema:
+            type: string
+        - name: egf_did
+          in: query
+          required: true
+          description: >
+            Unique identifier of the governance framework. Defaults to
+            the trust registry’s own if none is supplied.
+          schema:
+            type: string
+        - name: time
+          in: query
+          required: false
+          description: >
+            RFC3339 timestamp indicating when recognition is checked.
+            Defaults to "now" on the system being queried.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Ecosystem recognition successfully verified.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecognitionResponse'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Ecosystem not recognized or not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /ecosystems/{ecosystem_did}/recognitions:
+    get:
+      summary: List Recognized Ecosystems
+      tags:
+        - extensions
+      description: >
+        Retrieves a collection of recognized ecosystems for a
+        specified governance framework.
+      operationId: listEcosystemRecognitions
+      parameters:
+        - name: ecosystem_did
+          in: path
+          required: true
+          description: Unique identifier of the ecosystem being queried.
+          schema:
+            type: string
+        - name: egf_did
+          in: query
+          required: false
+          description: >
+            Optional identifier of the governance framework to filter
+            the response. 
+          schema:
+            type: string
+        - name: time
+          in: query
+          required: false
+          description: >
+            RFC3339 timestamp indicating when recognition is checked.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Ecosystem recognitions retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecognitionResponse'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Ecosystem not recognized or not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /ecosystems/{ecosystem_did}/lookups/assuranceLevels:
+    get:
+      summary: Lookup Supported Assurance Levels
+      tags:
+        - extensions
+      description: >
+        Retrieves the supported assurance levels for the specified
+        ecosystem.
+      operationId: lookupSupportedAssuranceLevels
+      parameters:
+        - name: ecosystem_did
+          in: path
+          required: true
+          description: Unique identifier of the ecosystem being queried.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Supported assurance levels retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssuranceLevelResponse'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Ecosystem not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /ecosystems/{ecosystem_did}/lookups/authorizations:
+    get:
+      summary: Lookup Authorizations
+      tags:
+        - extensions
+      description: >
+        Performs an authorization lookup based on the provided
+        ecosystem identifier.
+      operationId: lookupAuthorizations
+      parameters:
+        - name: ecosystem_did
+          in: path
+          required: true
+          description: Ecosystem identifier.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of authorization responses.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuthorizationResponse'
+        '404':
+          description: Entity not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /egfs/{ecosystem_did}/lookups/didmethods:
+    get:
+      summary: Lookup Supported DID Methods
+      tags:
+        - extensions
+      description: >
+        Retrieves the supported DID Methods recognized by this trust
+        registry for the specified ecosystem governance framework.
+      operationId: lookupSupportedDIDMethods
+      parameters:
+        - name: ecosystem_did
+          in: path
+          required: true
+          description: Unique identifier of the ecosystem being queried.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Supported DID Methods retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DIDMethodListType'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Ecosystem not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  schemas:
+    ProblemDetails:
+      type: object
+      description: >
+        A Problem Details object (RFC 7807).
+      properties:
+        type:
+          type: string
+          format: uri
+          description: URI reference identifying the problem type.
+        title:
+          type: string
+          description: Short, human-readable summary of the problem.
+        status:
+          type: integer
+          description: HTTP status code (e.g., 404).
+        detail:
+          type: string
+          description: Human-readable explanation of the problem.
+        instance:
+          type: string
+          format: uri
+          description: URI reference identifying this specific occurrence.
+      additionalProperties: true
+
+    TrustRegistryMetadata:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the Trust Registry.
+        default_egf_did:
+          type: string
+          description: >
+            Default EGF DID used if none is supplied in queries.
+        description:
+          type: string
+          maxLength: 4096
+          description: A description of the Trust Registry.
+        name:
+          type: string
+          description: Human-readable name of the Trust Registry.
+        controllers:
+          type: array
+          description: List of unique identifiers for controllers.
+          items:
+            type: string
+          minItems: 1
+      required:
+        - id
+        - description
+        - name
+        - controllers
+
+    AuthorizationResponse:
+      type: object
+      properties:
+        egf_did:
+          type: string
+          description: EGF DID this authorization response relates to.
+        recognized:
+          type: boolean
+          description: Indicates if the entity is recognized by the TR.
+        authorized:
+          type: boolean
+          description: Indicates if the entity holds the authorization.
+        message:
+          type: string
+          description: Additional context for the authorization status.
+        evaluated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the status was evaluated.
+        response_time:
+          type: string
+          format: date-time
+          description: Timestamp when the response was generated.
+        expiry_time:
+          type: string
+          format: date-time
+          description: Expiration timestamp (if any).
+        jws:
+          type: string
+          description: Signed response (JWS) from the registry’s controller.
+      required:
+        - recognized
+        - authorized
+        - message
+        - evaluated_at
+        - response_time
+
+    RecognitionResponse:
+      type: object
+      properties:
+        recognized:
+          type: boolean
+          description: Indicates if the ecosystem is recognized.
+        message:
+          type: string
+          description: Additional info about the recognition status.
+        egf_did:
+          type: string
+          description: EGF DID this recognition applies to.
+        evaluated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the status was evaluated.
+        response_time:
+          type: string
+          format: date-time
+          description: Timestamp when the response was generated.
+        expiry_time:
+          type: string
+          format: date-time
+          description: Expiration timestamp (if any).
+        jws:
+          type: string
+          description: Signed response (JWS) from the registry’s controller.
+      required:
+        - recognized
+        - message
+        - evaluated_at
+        - response_time
+
+    AssuranceLevelResponse:
+      type: object
+      properties:
+        egf_did:
+          type: string
+          description: EGF DID this assurance level applies to.
+        assurance_level:
+          type: string
+          description: The assurance level (e.g. LOA2).
+        description:
+          type: string
+          description: Details about the assurance level.
+      required:
+        - assurance_level
+        - description
+
+    DIDMethodType:
+      type: object
+      required:
+        - identifier
+      description: DID Method supported by the trust registry.
+      properties:
+        identifier:
+          type: string
+          description: Name or URI referencing the DID method.
+        egf_did:
+          type: string
+          description: EGF DID that recognizes this DID method.
+        maximumAssuranceLevel:
+          $ref: "#/components/schemas/AssuranceLevelType"
+
+    DIDMethodListType:
+      type: array
+      items:
+        $ref: "#/components/schemas/DIDMethodType"
+
+    AssuranceLevelType:
+      type: object
+      description: Defines a recognized assurance level in a trust registry.
+      required:
+        - identifier
+        - name
+        - description
+      properties:
+        identifier:
+          type: string
+          format: uri
+        name:
+          type: string
+        description:
+          type: string
+```
+</details>
+
+### **Ayra TRQP Profile API - Summary**  
+A **RESTful API** for the **Ayra Trust Network** that enables **trust verification, entity authorization checks, and ecosystem recognition.** It provides metadata on **trust registries, assurance levels, authorizations, and DID methods** for decentralized governance.  
+
+#### **Why Lookups Matter?**  
+Lookups provide **structured discovery** of key trust elements, ensuring that:  
+- **Assurance Levels** define trust standards for entities.  
+- **Authorizations** verify if an entity has permissions.  
+- **DID Methods** confirm supported identity mechanisms.  
+- **Ecosystem Recognitions** establish cross-framework compatibility.  
+
+These lookups **enable automation, trust validation, and governance interoperability** in decentralized networks.
+
+### **Ayra TRQP Profile API - Key API Calls**  
+
+#### **1. Trust Registry Metadata**  
+📌 **Retrieve metadata about the trust registry.**  
+- `GET /metadata` → Fetches trust registry details.  
+
+#### **2. Entity Verification**  
+📌 **Check entity details & authorization.**  
+- `GET /entities/{entity_id}` → Fetches entity information.  
+- `GET /entities/{entity_id}/authorization` → Checks if an entity is authorized within a governance framework.  
+
+#### **3. Ecosystem Recognition**  
+📌 **Verify governance framework relationships.**  
+- `GET /registries/{ecosystem_did}/recognition` → Checks if an ecosystem is recognized.  
+- `GET /ecosystems/{ecosystem_did}/recognitions` → Lists recognized ecosystems under a governance framework.  
+
+#### **4. Lookups for Trust & Governance**  
+📌 **Discover key trust parameters.**  
+- `GET /ecosystems/{ecosystem_did}/lookups/assuranceLevels` → Fetches supported **assurance levels**.  
+- `GET /ecosystems/{ecosystem_did}/lookups/authorizations` → Retrieves all authorizations within an ecosystem.  
+- `GET /egfs/{ecosystem_did}/lookups/didmethods` → Lists **supported DID methods** for identity verification.  
+
+These API calls help **automate trust validation, ensure compliance, and support decentralized governance.**
+
+See the swagger above for more details.

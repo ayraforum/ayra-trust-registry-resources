@@ -2,6 +2,10 @@
 
 **State: DRAFT**
 
+::: note
+See the [Profile](https://ayraforum.github.io/ayra-trust-registry-resources) for the Ayra Implementation Profile
+:::
+
 This document is a *non-normative* guide to help you implement the Trust Registry Query Protocol (TRQP) for participation in the Ayra Trust Network (ATN). It is intended as a starting point for understanding how to achieve trusted, cross-ecosystem data exchange using TRQP. By following this guide, you will learn the fundamentals of bridging your existing trust frameworks via a standardized interface.
 
 
@@ -63,7 +67,6 @@ You can develop or reuse any *internal* trust model you prefer. The only require
 3. You must handle how to map your *internal* trust model to **TRQP**.  
 4. **TRQP** ultimately answers: “Does Entity X have Authorization Y, in the context of Ecosystem Governance Framework Z?”
 
----
 
 ## Core Requirements of Implementing the TRQP for the Ayra Trust Network
 
@@ -122,8 +125,6 @@ Joining the Ayra Trust Network involves:
 
 3. **Provide Your Ecosystem’s DID to Ayra**  
    Complete the governance review and register your ecosystem’s DID with Ayra.
-
----
 
 ## Performing Authority Queries as a Verifier
 
@@ -844,3 +845,90 @@ components:
           type: string
 ```
 </details>
+
+### **Ayra TRQP Profile API - Summary**  
+A **RESTful API** for the **Ayra Trust Network** that enables **trust verification, entity authorization checks, and ecosystem recognition.** It provides metadata on **trust registries, assurance levels, authorizations, and DID methods** for decentralized governance.  
+
+#### **Why Lookups Matter?**  
+Lookups provide **structured discovery** of key trust elements, ensuring that:  
+- **Assurance Levels** define trust standards for entities.  
+- **Authorizations** verify if an entity has permissions.  
+- **DID Methods** confirm supported identity mechanisms.  
+- **Ecosystem Recognitions** establish cross-framework compatibility.  
+
+These lookups **enable automation, trust validation, and governance interoperability** in decentralized networks.
+
+### **Ayra TRQP Profile API - Key API Calls**  
+
+#### **1. Trust Registry Metadata**  
+📌 **Retrieve metadata about the trust registry.**  
+- `GET /metadata` → Fetches trust registry details.  
+
+#### **2. Entity Verification**  
+📌 **Check entity details & authorization.**  
+- `GET /entities/{entity_id}` → Fetches entity information.  
+- `GET /entities/{entity_id}/authorization` → Checks if an entity is authorized within a governance framework.  
+
+#### **3. Ecosystem Recognition**  
+📌 **Verify governance framework relationships.**  
+- `GET /registries/{ecosystem_did}/recognition` → Checks if an ecosystem is recognized.  
+- `GET /ecosystems/{ecosystem_did}/recognitions` → Lists recognized ecosystems under a governance framework.  
+
+#### **4. Lookups for Trust & Governance**  
+📌 **Discover key trust parameters.**  
+- `GET /ecosystems/{ecosystem_did}/lookups/assuranceLevels` → Fetches supported **assurance levels**.  
+- `GET /ecosystems/{ecosystem_did}/lookups/authorizations` → Retrieves all authorizations within an ecosystem.  
+- `GET /egfs/{ecosystem_did}/lookups/didmethods` → Lists **supported DID methods** for identity verification.  
+
+These API calls help **automate trust validation, ensure compliance, and support decentralized governance.**
+
+See the swagger above for more details.
+
+## **Q\&A**
+
+### **Ecosystem Governance Framework. What Does It Mean Practically?**
+
+An ecosystem governance framework is a governance framework for a digital trust ecosystem. An ecosystem governance framework may incorporate, aggregate, or reference other types of governance frameworks such as a credential governance framework or a utility governance framework.
+
+For many ecosystems, this is a website that can be resolved by the TRQP. The mechanism for resolution depends on the *TRQP Profile*. The TRQP Implementation Profile defines the resolution and data models required for practical interoperability. 
+
+Which means that an EGF is a URI that points to the ecosystem governance documents. This means an HTTP resolvable endpoint with currently no requirements returned data types. The important part is that this data will be used to make trust decisions and that actors that want to use the ecosystem *MUST* understand how to use the ecosystem.
+
+### **How Should I Think About Authorizations?**
+
+An authorization represents a set of privileges granted to an entity; conveys an “official” sanction to perform a cryptographic function or other sensitive activity. (Source: [NIST NIST SP 800-57 Part 2 Rev.1 under Authorization](https://csrc.nist.gov/glossary/term/permission)).
+
+An authorization is identified by a string. Within the Ayra Trust Network, **we only care about the identifier\!** Your internal authorization models are entirely up to you. External verifiers will query your authorization identifier to get an Authorization Response via. the TRQP.
+
+### **What Types Of Entries Can I Support?**
+
+For **AuthorizationQueries**, we really don’t care\! As long as it’s identifiable by the triple: target\_id, ecosystem\_id, authorization\_id \+ time then it’s entirely up to you how you’d like to manage your Authorizations. 
+
+**Recognition Queries** are also not prescriptive, but we recommend recognizing ecosystems. 
+
+### **What’s the difference between recognition and authorization?**
+
+The [Authority Statement Model](https://docs.google.com/document/d/1kXsfyiP-1N-51qMlpS-DdtEMnZWwr0ZCqDDxmXj9q0M/edit?tab=t.0#heading=h.n3995sf0zn23) goes into this at depth, but at a high level: Recognition has no form of formal control over an entity. An authorization is an explicit expression of hierarchical control over an entity within an ecosystem. 
+
+### **Does this work offline?**
+
+If you need offline support, you can cache the ATN recognition status locally. There are no requirements to do so. In the case you cache the recognition state of an ecosystem, you may get out of sync with the network. We leave that to the verifier and verifier vendor systems to determine. 
+
+### **What about phone home?**
+
+We are looking at HTTPS based queries for now because of the ease of integration with enterprise ecosystems. In time, we would love to consider alternative patterns that do not suffer from the phone home problem. 
+
+### **Is a query to the Ayra Trust Network private?**
+
+No Personally Identifiable Information is shared when making a recognition request to the Ayra Trust Network. Because a recognition query is formed only using DID’s, there’s no PII information provided in those DIDs.  
+Ecosystems must manage their authorizations and their ecosystem identifiers. If an ecosystem does not preserve privacy of its participants, then that information can be used outside the network. 
+
+### **What about correlation risk?**
+
+As of now, only the ecosystem’s DID is requested on a recognition query and no requester DID is required. The only correlation attacks are if you combined the ecosystem DID with the networking/IP correlation of the requester. 
+
+We are eager to discover new methods that mitigate this correlation risk. 
+
+### **How does this fit with regulatory requirements?**
+
+Regulatory requirements to join the Ayra Trust Network will be done on a governance level. 
