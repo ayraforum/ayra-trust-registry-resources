@@ -7,7 +7,6 @@ This specification introduces the Ayra TRQP Profile that will be used to describ
 | **Email** | andor.kesselman@ayra.forum |
 | **ID** | Authority Verification Interoperability Profile |
 | **Description** | This RFC defines the interoperability requirements for  inter and intra ecosystem authority verification. This RFC impacts the design and implementation of the Ayra Metaregistry Network as well as Trust Registry vendors who wish their systems to interact..  |
-| **Impact** | Critical |
 | **Audience** | Implementors of Trust Registries: Consumers using TRQP queries to get answers about the ecosystems they are accessing. Providers integrating their system of record into the Ayra Trust Network, by adding TRQP Swagger API to their system \- directly, or via a Bridge pattern. |
 | **Version** | **Draft v0.0.2** |
 | **Table Of Contents** |  [Profile Overview](#profile-overview) [Identifier Requirements](#identifier-requirements) [Security and Privacy Requirements](#security-and-privacy-requirements) [Protocol Requirements](#protocol-requirements) [Roles](#roles) [Sample Pattern](?tab=t.q9xo7eqyr0bz#heading=h.u96dh747m6a) [Versioning and Backwards Compatibility](#versioning-and-backwards-compatibility)  |
@@ -713,40 +712,3 @@ components:
 ```
 </details>
 
-### **Ayra TRQP Profile API - Summary**  
-A **RESTful API** for the **Ayra Trust Network** that enables **trust verification, entity authorization checks, and ecosystem recognition.** It provides metadata on **trust registries, assurance levels, authorizations, and DID methods** for decentralized governance.  
-
-#### **Why Lookups Matter?**  
-Lookups provide **structured discovery** of key trust elements, ensuring that:  
-- **Assurance Levels** define trust standards for entities.  
-- **Authorizations** verify if an entity has permissions.  
-- **DID Methods** confirm supported identity mechanisms.  
-- **Ecosystem Recognitions** establish cross-framework compatibility.  
-
-These lookups **enable automation, trust validation, and governance interoperability** in decentralized networks.
-
-### **Ayra TRQP Profile API - Key API Calls**  
-
-#### **1. Trust Registry Metadata**  
-📌 **Retrieve metadata about the trust registry.**  
-- `GET /metadata` → Fetches trust registry details.  
-
-#### **2. Entity Verification**  
-📌 **Check entity details & authorization.**  
-- `GET /entities/{entity_id}` → Fetches entity information.  
-- `GET /entities/{entity_id}/authorization` → Checks if an entity is authorized within a governance framework.  
-
-#### **3. Ecosystem Recognition**  
-📌 **Verify governance framework relationships.**  
-- `GET /registries/{ecosystem_did}/recognition` → Checks if an ecosystem is recognized.  
-- `GET /ecosystems/{ecosystem_did}/recognitions` → Lists recognized ecosystems under a governance framework.  
-
-#### **4. Lookups for Trust & Governance**  
-📌 **Discover key trust parameters.**  
-- `GET /ecosystems/{ecosystem_did}/lookups/assuranceLevels` → Fetches supported **assurance levels**.  
-- `GET /ecosystems/{ecosystem_did}/lookups/authorizations` → Retrieves all authorizations within an ecosystem.  
-- `GET /egfs/{ecosystem_did}/lookups/didmethods` → Lists **supported DID methods** for identity verification.  
-
-These API calls help **automate trust validation, ensure compliance, and support decentralized governance.**
-
-See the swagger above for more details.
