@@ -3,16 +3,10 @@
 import requests
 import json
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 import sys
 import uuid  # For generating nonce
-import secrets  # For generating secure tokens
-from urllib.parse import (
-    urljoin as urllib_urljoin,
-)  # Use standard library for URL joining
 import jwt  # PyJWT library
-import json
-
 
 DEFAULT_DID_RESOLVER_URL = "https://dev.uniresolver.io/1.0/identifiers/"
 
@@ -89,19 +83,21 @@ def get_service_endpoint(did_document, service_type):
 
 def format_time(time_str=None):
     """
-    Formats the time to be in RFC3339 format (e.g., '2025-03-07T00:20:48.727Z').
+    Formats the time to be in RFC3339 format (e.g., '2025-03-07T00:20:48Z').
+    Ensures it follows 'YYYY-MM-DDTHH:MM:SSZ' format.
     """
     if time_str:
-        # Parse the provided time string into a datetime object
         try:
+            # Ensure compatibility with Z-suffixed times
+            if time_str.endswith("Z"):
+                time_str = time_str[:-1] + "+00:00"
+
             parsed_time = datetime.fromisoformat(time_str)
-            # Return the time in RFC3339 format, without microseconds
-            return parsed_time.replace(microsecond=0).isoformat() + "Z"
+            return parsed_time.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         except ValueError:
             raise ValueError(f"Invalid time format: {time_str}")
     else:
-        # Return the current time in RFC3339 format
-        return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+        return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def ecosystem_recognition_query(
@@ -152,24 +148,16 @@ def ecosystem_recognition_query(
     params = {"egf_did": egf_did, "time": formatted_time}
 
     try:
+        print("Making recognition query")
         # Step 6: Send GET request to the constructed endpoint
         response = requests.get(endpoint_url, params=params)
+        print("Done making recognition query", response)
         response.raise_for_status()
         print("Ecosystem Recognition Query Response:")
 
         resp = response.json()
-        jws = resp.get("jws", None)
-
-        if jws:
-            # Decode the JWS token
-            decoded_payload = decode_jws(jws)
-            if decoded_payload:
-                resp["decoded_payload"] = decoded_payload
-                return resp
-        else:
-            raise Exception("No JWS token found in response.")
-
-        print(json.dumps(response.json(), indent=2))
+        print(json.dumps(resp, indent=2))
+        return resp
     except requests.exceptions.RequestException as e:
         print(f"Error performing Ecosystem Recognition Query: {e}", file=sys.stderr)
 
@@ -232,16 +220,8 @@ def authorization_query(
         print("Authorization Query Response:")
 
         resp = response.json()
-        jws = resp.get("jws", None)
-
-        if jws:
-            # Decode the JWS token
-            decoded_payload = decode_jws(jws)
-            if decoded_payload:
-                resp["decoded_payload"] = decoded_payload
-                return resp
-        else:
-            raise Exception("No JWS token found in response.")
+        print(json.dumps(resp, indent=2))
+        return resp
     except requests.exceptions.RequestException as e:
         print(f"Error performing Authorization Query: {e}", file=sys.stderr)
         return None
