@@ -13,9 +13,9 @@ This document is a *non-normative* guide to help you implement the Trust Registr
 
 Before diving into implementation details, we recommend familiarizing yourself with:
 
-- Ayra TRQP Implementation Profile  
-- Introduction to Ayra  
-- Ayra Technical Whitepaper  
+- [Ayra TRQP Implementation Profile](https://ayraforum.github.io/ayra-trust-registry-resources)
+- [Introduction to Ayra](https://ayra.forum/ayra-introduction/)
+- [Ayra Technical Whitepaper](https://ayra.forum/ayra-technical-whitepaper/)
 
 (These references provide deeper background on the Ayra ecosystem and the TRQP specifications.)
 
@@ -35,26 +35,33 @@ The Authorization Query is the key mechanism for answering questions like:
 > “Does Entity X have Authorization Y, in the context of Ecosystem Governance Framework Z?”
 
 For example, “Is issuer X authorized to issue credential Y under ecosystem Z?”  
-We often call this the “triples model”: (Entity X, Authorization Y, Ecosystem Governance Framework Z).
 
-Within the Ayra Trust Network, conforming to the Authorization Query is a **minimum requirement** to participate. Any **verifier** wanting to connect must be able to perform both a **Recognition Query** (to check if an ecosystem is recognized by ATN) and an **Authorization Query** (to confirm an entity’s authorization within that ecosystem).
+Within the Ayra Trust Network, conforming to the Authorization Query is a
+**minimum requirement** to participate. Any **verifier** wanting to connect must
+be able to perform both a **Recognition Query** (to check if an ecosystem is
+recognized by ATN) and an **Authorization Query** (to confirm an entity’s
+authorization within that ecosystem).
 
-When bridging into an ecosystem, you may need adapters tailored to that ecosystem’s internal trust framework. The diagram below shows a simplified conceptual flow:
+When bridging into an ecosystem, you may need adapters tailored to that
+ecosystem’s internal trust framework. The diagram below shows a simplified
+conceptual flow:
 
 ```mermaid
 flowchart LR
   subgraph ATN[Ayra Trust Network]
     Metaregistry
     A
+    AyraTRQPBridge[Ayra Bridge]
   end
   subgraph Ecosystem
-    A(Ayra Profile) -->|complies| B(TRQP Adapter)
+    A(Ayra Profile) -->|complies with| B(Ecosystem TRQP Bridge)
     B -->|bridges| TrustRegistry[TrustRegistry] -->|serves| C[System Of Record]
   end
   Ecosystem -->|registers| ATN
 
-  TrustRegistry -->|authorization query| D(Verifier)
-  Metaregistry -->|recognition query| D(Verifier)
+  B -->|authorization query| D(Verifier)
+  A -->|complies| AyraTRQPBridge
+  Metaregistry --> AyraTRQPBridge -->|recognition query| D(Verifier)
 ```
 
 
@@ -70,7 +77,7 @@ You can develop or reuse any *internal* trust model you prefer. The only require
 
 ## Core Requirements of Implementing the TRQP for the Ayra Trust Network
 
-To be a compatible Trust Registry for Ayra, your registry must:
+To be a compatible Trust Registry for Ayra, your registry must support the [Ayra Authority Verification Profile](https://ayraforum.github.io/ayra-trust-registry-resources). For example, for an Authorization Query it MUST:
 
 - Handle queries for the Authorization Query (for example, `GET /entities/{entity_id}/authorization`).
 - Return a compliant **Authorization Response**.
@@ -84,6 +91,10 @@ sequenceDiagram
     Verifier->>TrustRegistry: GET /entities/{entity_id}/authorization?authorization_id=XYZ
     TrustRegistry->>Verifier: AuthorizationResponse (authorized|not-authorized)
 ```
+
+::: note
+One key concept of the TRQP and Ayra is the concept of Ecosystems. This small conceptual pattern is very important and by designing things with it in mind, you may save some time integrating!
+:::
 
 ### Two Key Takeaways
 
@@ -121,7 +132,7 @@ Joining the Ayra Trust Network involves:
    The ecosystem DID **must** have at least two service endpoints:
 
    - One pointing to the Ecosystem Governance Framework documentation.  
-   - One pointing to the DID of the Trust Registry.  
+   - One pointing to the DID(s) of the Trust Registry.  
 
 3. **Provide Your Ecosystem’s DID to Ayra**  
    Complete the governance review and register your ecosystem’s DID with Ayra.
@@ -164,29 +175,39 @@ In the simplest scenario, there is just one trust registry. The verifier queries
 
 ```mermaid
 sequenceDiagram
-    participant Verifier
-    participant SimpleTR as Trust Registry
-    Verifier->>SimpleTR: GET /entities/{entity_id}/authorization
-    SimpleTR->>Verifier: AuthorizationResponse (Yes/No)
+   participant Verifier
+   participant DIDRes as DID Resolver
+   participant AyraEco as Ayra Trust Registry
+   participant TargetEco as Target Ecosystem
+   
+   %% Recognition Flow
+   loop recognition_flow
+   Verifier->>DIDRes: Resolve Ayra Ecosystem DID
+   DIDRes->>Verifier: DID Document
+   Verifier->>Verifier: Extract Ayra TR endpoint
+   
+   Verifier->>AyraEco: GET /ecosystems/{target_ecosystem_did}/recognition
+   AyraEco->>Verifier: RecognitionResponse (Yes/No)
+   end
+   
+   %% Authorization Flow
+   loop authorization_flow
+   Verifier->>DIDRes: Resolve Target Ecosystem DID
+   DIDRes->>Verifier: DID Document
+   Verifier->>Verifier: Extract TR DID from serviceEndpoint
+   
+   Verifier->>DIDRes: Resolve TR DID
+   DIDRes->>Verifier: DID Document with endpoints
+   Verifier->>Verifier: Extract authorization endpoint
+   
+   Verifier->>TargetEco: GET /entities/{entity_id}/authorization
+   TargetEco->>Verifier: AuthorizationResponse (Yes/No)
+   end
 ```
 
-### Bridge Case Study: TRAIN
+### Bridge Case Study: TODO
 
-In a more complex scenario (for example, using EBSI Trust Chains or TRAIN), an ecosystem might have intricate internal logic involving national-level roots of trust, multi-level issuance, etc. By **wrapping** your internal trust validators with TRQP endpoints, you can expose a simple “authorization” yes/no to external verifiers.
-
-For example:
-
-```mermaid
-flowchart LR
-    A[National Gov Root of Trust] --> B[University]
-    B --> C[TRAIN Trust Validator]
-    C --> D(TRQP Adapter)
-    D --> E[Verifier]
-```
-
-After registering your DID with Ayra and passing governance, verifiers can call your TRQP service for a straightforward answer, abstracting away the internal complexities.
-
----
+TODO: Case Study
 
 ## Security Considerations
 
@@ -249,7 +270,6 @@ The minimal data in queries (DIDs) helps reduce correlation, but it does not eli
 
 Local ecosystems must ensure compliance with regulatory obligations. Ayra’s governance process also involves some level of regulatory and policy alignment at the network level.
 
----
 
 ## Ayra Extensions
 
