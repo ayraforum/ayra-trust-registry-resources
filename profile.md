@@ -12,6 +12,8 @@ This specification introduces the Ayra TRQP Profile that will be used to describ
 | **Table Of Contents** |  [Profile Overview](#profile-overview) [Identifier Requirements](#identifier-requirements) [Security and Privacy Requirements](#security-and-privacy-requirements) [Protocol Requirements](#protocol-requirements) [Roles](#roles) [Sample Pattern](?tab=t.q9xo7eqyr0bz#heading=h.u96dh747m6a) [Versioning and Backwards Compatibility](#versioning-and-backwards-compatibility)  |
 
 Learn more at the [Implementers Guide](https://ayraforum.github.io/ayra-trust-registry-resources/guides/)
+Learn about the playground at [Playground](https://ayraforum.github.io/ayra-trust-registry-resources/playground/)
+
 
 # **Profile Overview**  {#profile-overview}
 
