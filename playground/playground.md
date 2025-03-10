@@ -12,7 +12,7 @@ This document provides instructions for setting up and testing your own Ayra Tru
 1. Clone the repository:
    ```
    git clone https://github.com/ayra-network/trust-playground.git
-   cd trust-playground
+   cd playground 
    ```
 
 ## Step 1: Set up a Sample Ayra Trust Registry
@@ -52,6 +52,8 @@ This document provides instructions for setting up and testing your own Ayra Tru
 
 5. Note the DID generated for this ecosystem, which will be referred to as the **Sample Ecosystem DID**.
 
+![imgs/admin_view.png](imgs/admin_view.png)
+
 ## Step 3: Authorize an Entry in Your Ecosystem
 
 1. Open a web browser and navigate to `http://localhost:8083/admin/docs`
@@ -65,6 +67,8 @@ This document provides instructions for setting up and testing your own Ayra Tru
 
 *Note: In production environments, authorization will follow your specific trust framework and governance processes. This is a simplified sample implementation.*
 
+![imgs/authorization_admin.png](imgs/authorization_admin.png)
+
 ## Step 4: Establish Recognition Between Ecosystems
 
 1. Navigate to `http://localhost:8085/admin/docs` in your browser
@@ -73,6 +77,8 @@ This document provides instructions for setting up and testing your own Ayra Tru
    - Target Ecosystem: [Sample Ecosystem DID from Step 2]
    - EGF DID: [Ayra Ecosystem DID from Step 1]
 4. Submit the request
+
+![imgs/recognize_admin.png](imgs/recognize_admin.png)
 
 *Note: In production, this recognition process will be conducted through the formal Ayra Governance Process.*
 
@@ -104,6 +110,9 @@ This step allows you to test both recognition and authorization aspects of the A
 
 This query demonstrates the *recognition* mechanism of the Ayra Trust Network, confirming whether one ecosystem recognizes another.
 
+![imgs/recognition_query.png](imgs/recognition_query.png)
+
+
 ### Step 5.2: Test Ecosystem Authorization
 
 1. Navigate to the "Authorization Test" tab in the Streamlit interface
@@ -116,6 +125,9 @@ This query demonstrates the *recognition* mechanism of the Ayra Trust Network, c
 4. The interface will display the authorization status, confirming whether the specified entity is authorized within the ecosystem
 
 This query demonstrates the *authorization* mechanism of the Ayra Trust Network, verifying the credentials of entities within an ecosystem.
+
+![imgs/authorization_query.png](imgs/authorization_query.png)
+
 
 ## Exploring DIDs
 
