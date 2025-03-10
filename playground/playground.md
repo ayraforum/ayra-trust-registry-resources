@@ -2,6 +2,10 @@
 
 This document provides instructions for setting up and testing your own Ayra Trust Network playground environment.
 
+::: note
+This is a DRAFT
+::: 
+
 ## Prerequisites
 
 - Go programming language (version 1.15+)
