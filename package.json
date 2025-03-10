@@ -9,7 +9,7 @@
     },
     "scripts": {
         "edit": "node -e \"require('spec-up')()\"",
-        "render": "node -e \"require('spec-up')({ nowatch: true })\"",
+        "render": "sh prepare.sh && node -e \"require('spec-up')({ nowatch: true })\"",
         "dev": "node -e \"require('spec-up')({ dev: true })\""
     },
     "keywords": ["spec", "specs", "markdown", "editor", "standards"],
