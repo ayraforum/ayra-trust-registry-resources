@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  trust-registry-1:
+  ayra:
     build:
       context: ./trust-registry
       dockerfile: Dockerfile
@@ -13,12 +13,12 @@ services:
       - ./trust-registry/data/registry.json:/app/data/registry.json
     environment:
       - PORT=8082
-      - REGISTRY_NAME=TR-1
+      - REGISTRY_NAME=Ayra
       - REGISTRY_PATH=/app/data/registry.json
-      - BASE_URL=http://trust-registry-1
+      - BASE_URL=http://localhost
     restart: always
 
-  trust-registry-2:
+  ecosystem:
     build:
       context: ./trust-registry
       dockerfile: Dockerfile
@@ -30,9 +30,9 @@ services:
       - ./trust-registry/data/registry.json:/app/data/registry.json
     environment:
       - PORT=8082
-      - REGISTRY_NAME=TR-2
+      - REGISTRY_NAME=Ecosystem
       - REGISTRY_PATH=/app/data/registry.json
-      - BASE_URL=http://trust-registry-2
+      - BASE_URL=http://localhost
     restart: always
 
   verifier:
@@ -43,9 +43,4 @@ services:
       - "8501:8501"
     environment:
       - DEFAULT_DID_RESOLVER_URL=https://dev.uniresolver.io/1.0/identifiers/
-      - TR1_ENDPOINT=http://trust-registry-1:8082
-      - TR2_ENDPOINT=http://trust-registry-2:8082
-    depends_on:
-      - trust-registry-1
-      - trust-registry-2
     restart: always
