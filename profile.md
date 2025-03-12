@@ -13,6 +13,7 @@ This specification introduces the Ayra TRQP Profile that will be used to describ
 
 Learn more at the [Implementers Guide](https://ayraforum.github.io/ayra-trust-registry-resources/guides/)
 Learn about the playground at [Playground](https://ayraforum.github.io/ayra-trust-registry-resources/playground/)
+Check the [API documentation](https://ayraforum.github.io/ayra-trust-registry-resources/api-docs/)
 
 
 # **Profile Overview**  {#profile-overview}
