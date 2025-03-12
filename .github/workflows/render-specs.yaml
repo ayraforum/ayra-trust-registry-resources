@@ -29,10 +29,10 @@ jobs:
           cp -r playground/trust-registry/api/* ./
 
           # Validate OpenAPI specs
-          swagger-cli validate trqp.yaml
+          swagger-cli validate swagger.yaml
 
           # Build Redoc documentation
-          redoc-cli bundle trqp.yaml -o ./dist/api-docs/redoc.html --title "Ayra Trust Registry API Documentation"
+          redoc-cli bundle swagger.yaml -o ./dist/api-docs/redoc.html --title "Ayra Trust Registry API Documentation"
 
           # Create Swagger UI documentation
           mkdir -p ./dist/api-docs/swagger-ui
@@ -54,7 +54,7 @@ jobs:
             <script>
               window.onload = function() {
                 window.ui = SwaggerUIBundle({
-                  url: "../trqp.yaml",
+                  url: "../swagger.yaml",
                   dom_id: '#swagger-ui',
                   deepLinking: true,
                   presets: [SwaggerUIBundle.presets.apis],
@@ -66,7 +66,7 @@ jobs:
           EOL
 
           # Copy OpenAPI specs to dist directory
-          cp trqp.yaml ./dist/api-docs/
+          cp swagger.yaml ./dist/api-docs/
 
           # Create index page linking to both documentation types
           cat > ./dist/api-docs/index.html << 'EOL'
@@ -121,7 +121,7 @@ jobs:
               <h3>Raw OpenAPI Specification</h3>
               <p>You can also access the raw OpenAPI specification file:</p>
               <ul>
-                <li><a href="trqp.yaml">OpenAPI Specification (YAML)</a></li>
+                <li><a href="swagger.yaml">OpenAPI Specification (YAML)</a></li>
               </ul>
             </div>
           </body>
@@ -136,7 +136,7 @@ jobs:
           echo '</div>' >> ./dist/index.html
 
           # Clean up temporary files
-          rm -f trqp.yaml
+          rm -f swagger.yaml
 
       - name: Clean up 🧹
         run: |
