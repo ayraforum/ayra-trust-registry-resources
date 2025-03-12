@@ -38,11 +38,11 @@ jobs:
           swagger-cli validate $SPEC_FILE
 
           # Build Redoc documentation
-          redoc-cli bundle $SPEC_FILE -o ./dist/api-docs/redoc.html --title "Ayra Trust Registry API Documentation"
+          redoc-cli bundle $SPEC_FILE -o ./dist/api-docs/redoc.html --title "Ayra TRQP API Documentation"
 
           # Create Swagger UI documentation
           mkdir -p ./dist/api-docs/swagger-ui
-          
+
           # Use curl instead of wget
           curl -L https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-bundle.js -o ./dist/api-docs/swagger-ui/swagger-ui-bundle.js
           curl -L https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui.css -o ./dist/api-docs/swagger-ui/swagger-ui.css
@@ -53,7 +53,7 @@ jobs:
           <html lang="en">
           <head>
             <meta charset="UTF-8">
-            <title>Ayra Trust Registry API Documentation</title>
+            <title>Ayra TRQP API Documentation</title>
             <link rel="stylesheet" href="swagger-ui.css" />
           </head>
           <body>
@@ -82,7 +82,7 @@ jobs:
           <html lang="en">
           <head>
             <meta charset="UTF-8">
-            <title>Ayra Trust Registry API Documentation</title>
+            <title>Ayra TRQP API Documentation</title>
             <style>
               body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
               h1 { color: #333; }
@@ -108,7 +108,7 @@ jobs:
             </style>
           </head>
           <body>
-            <h1>Ayra Trust Registry API Documentation</h1>
+            <h1>Ayra TRQP API Documentation</h1>
             <p>Choose your preferred documentation format:</p>
 
             <div class="docs-container">
@@ -139,7 +139,7 @@ jobs:
           # Add link to API docs from main index
           echo '<div style="margin-top: 40px; padding: 20px; background-color: #f5f5f5; border-radius: 8px;">' >> ./dist/index.html
           echo '<h2>API Documentation</h2>' >> ./dist/index.html
-          echo '<p>View the Ayra Trust Registry API documentation:</p>' >> ./dist/index.html
+          echo '<p>View the Ayra TRQP API documentation:</p>' >> ./dist/index.html
           echo '<p><a href="api-docs/" style="font-weight: bold; color: #0066cc;">Open API Documentation</a></p>' >> ./dist/index.html
           echo '</div>' >> ./dist/index.html
 
