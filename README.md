@@ -11,7 +11,7 @@ are non-normative and serve as guides to help you understand the steps needed to
 
 ## [Guides](./guides)
 * [Implementers Guide](https://ayraforum.github.io/ayra-trust-registry-resources/guides/) - Implementation guide to connect to the Ayra Trust Network.
-* [Playground Guid](https://ayraforum.github.io/ayra-trust-registry-resources/playground/) -- How to run the playground
+* [Playground Guide](https://ayraforum.github.io/ayra-trust-registry-resources/playground/) -- How to run the playground
 
 ## [Tools](./tools)
 * [EGF DID Creator](./tools/did_creator_ui.py) -- Create an Ayra Profile aligned DID for an ecosystem.  (Python)
