@@ -22,25 +22,33 @@ jobs:
 
       - name: Build API Documentation 📚
         run: |
-          # Install redoc-cli and swagger-cli
+          # Install redoc-cli, swagger-cli and curl
           npm install -g redoc-cli swagger-cli
+          apt-get update && apt-get install -y curl
 
           # Copy OpenAPI specs to working directory
           cp -r playground/trust-registry/api/* ./
 
-          # Validate OpenAPI specs
-          swagger-cli validate swagger.yaml
+          # Validate OpenAPI specs (using trqp.yaml or swagger.yaml as needed)
+          if [ -f trqp.yaml ]; then
+            SPEC_FILE="trqp.yaml"
+          else
+            SPEC_FILE="swagger.yaml"
+          fi
+          swagger-cli validate $SPEC_FILE
 
           # Build Redoc documentation
-          redoc-cli bundle swagger.yaml -o ./dist/api-docs/redoc.html --title "Ayra Trust Registry API Documentation"
+          redoc-cli bundle $SPEC_FILE -o ./dist/api-docs/redoc.html --title "Ayra Trust Registry API Documentation"
 
           # Create Swagger UI documentation
           mkdir -p ./dist/api-docs/swagger-ui
-          wget -O ./dist/api-docs/swagger-ui/swagger-ui-bundle.js https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-bundle.js
-          wget -O ./dist/api-docs/swagger-ui/swagger-ui.css https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui.css
+          
+          # Use curl instead of wget
+          curl -L https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-bundle.js -o ./dist/api-docs/swagger-ui/swagger-ui-bundle.js
+          curl -L https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui.css -o ./dist/api-docs/swagger-ui/swagger-ui.css
 
           # Create Swagger UI HTML
-          cat > ./dist/api-docs/swagger-ui/index.html << 'EOL'
+          cat > ./dist/api-docs/swagger-ui/index.html << EOL
           <!DOCTYPE html>
           <html lang="en">
           <head>
@@ -54,7 +62,7 @@ jobs:
             <script>
               window.onload = function() {
                 window.ui = SwaggerUIBundle({
-                  url: "../swagger.yaml",
+                  url: "../${SPEC_FILE}",
                   dom_id: '#swagger-ui',
                   deepLinking: true,
                   presets: [SwaggerUIBundle.presets.apis],
@@ -66,10 +74,10 @@ jobs:
           EOL
 
           # Copy OpenAPI specs to dist directory
-          cp swagger.yaml ./dist/api-docs/
+          cp $SPEC_FILE ./dist/api-docs/
 
           # Create index page linking to both documentation types
-          cat > ./dist/api-docs/index.html << 'EOL'
+          cat > ./dist/api-docs/index.html << EOL
           <!DOCTYPE html>
           <html lang="en">
           <head>
@@ -121,7 +129,7 @@ jobs:
               <h3>Raw OpenAPI Specification</h3>
               <p>You can also access the raw OpenAPI specification file:</p>
               <ul>
-                <li><a href="swagger.yaml">OpenAPI Specification (YAML)</a></li>
+                <li><a href="${SPEC_FILE}">OpenAPI Specification (YAML)</a></li>
               </ul>
             </div>
           </body>
@@ -136,7 +144,7 @@ jobs:
           echo '</div>' >> ./dist/index.html
 
           # Clean up temporary files
-          rm -f swagger.yaml
+          rm -f $SPEC_FILE
 
       - name: Clean up 🧹
         run: |
