@@ -27,14 +27,14 @@ The easiest way to run the playground is using Docker Compose:
    ```
 
 3. The following services will be available:
-   - Trust Registry 1: http://localhost:8082
-   - Trust Registry 2: http://localhost:8083
+   - Ayra: http://localhost:8082
+   - Ecosystem: http://localhost:8083
    - Verifier UI: http://localhost:8501
 
 4. To view logs from any service:
    ```
-   docker-compose logs trust-registry-1
-   docker-compose logs trust-registry-2
+   docker-compose logs ayra
+   docker-compose logs ecosystem
    docker-compose logs verifier
    ```
 
@@ -143,7 +143,7 @@ If you prefer to run the services without Docker:
 1. In the Streamlit interface (http://localhost:8501), navigate to the "Ecosystem Recognition" tab
 2. Complete the form with the following information:
    - Recognizing Ecosystem's DID: [Enter the Ayra DID from Trust Registry 1]
-   - Ecosystem ID: [Enter the Sample Ecosystem DID from Trust Registry 2]
+   - Ecosystem ID: [Enter the Sample Ecosystem DID from Ecosystem]
 3. Click "Perform Ecosystem Recognition Query"
 4. The interface will display the recognition status and details of the trust relationship between the two ecosystems
 
@@ -153,7 +153,7 @@ If you prefer to run the services without Docker:
 
 1. Navigate to the "Authorization" tab in the Streamlit interface
 2. Complete the form with the following information:
-   - EGF DID: [Enter the Sample Ecosystem DID from Trust Registry 2]
+   - EGF DID: [Enter the Sample Ecosystem DID from Ecosystem]
    - Entity ID: [Enter the authorized entity ID from Step 3]
    - Entity Authorization ID: [Enter the authorization type string from Step 3]
 3. Click "Perform Authorization Query"
@@ -175,7 +175,7 @@ The verifier can be configured with:
 
 - `DEFAULT_DID_RESOLVER_URL`: URL for the DID resolver service
 - `TR1_ENDPOINT`: Endpoint for Trust Registry 1
-- `TR2_ENDPOINT`: Endpoint for Trust Registry 2
+- `TR2_ENDPOINT`: Endpoint for Ecosystem
 
 ## Exploring DIDs
 
