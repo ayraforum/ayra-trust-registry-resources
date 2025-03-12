@@ -10,7 +10,7 @@
     "scripts": {
         "edit": "node -e \"require('spec-up')()\"",
         "render": "sh prepare.sh && node -e \"require('spec-up')({ nowatch: true })\"",
-        "dev": "node -e \"require('spec-up')({ dev: true })\""
+        "dev": "sh prepare.sh && node -e \"require('spec-up')({ dev: false })\""
     },
     "keywords": ["spec", "specs", "markdown", "editor", "standards"],
     "author": "Andor Kesselman",

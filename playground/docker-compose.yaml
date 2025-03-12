@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  trust-registry-1:
+    build:
+      context: ./trust-registry
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./trust-registry/api/trqp.yaml:/app/api/trqp.yaml
+      - ./trust-registry/redoc.html:/app/redoc.html
+      - ./trust-registry/data/registry.json:/app/data/registry.json
+    environment:
+      - PORT=8082
+      - REGISTRY_NAME=TR-1
+      - REGISTRY_PATH=/app/data/registry.json
+      - BASE_URL=http://trust-registry-1
+    restart: always
+
+  trust-registry-2:
+    build:
+      context: ./trust-registry
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8082"
+    volumes:
+      - ./trust-registry/api/trqp.yaml:/app/api/trqp.yaml
+      - ./trust-registry/redoc.html:/app/redoc.html
+      - ./trust-registry/data/registry.json:/app/data/registry.json
+    environment:
+      - PORT=8082
+      - REGISTRY_NAME=TR-2
+      - REGISTRY_PATH=/app/data/registry.json
+      - BASE_URL=http://trust-registry-2
+    restart: always
+
+  verifier:
+    build:
+      context: ./verifier
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - DEFAULT_DID_RESOLVER_URL=https://dev.uniresolver.io/1.0/identifiers/
+      - TR1_ENDPOINT=http://trust-registry-1:8082
+      - TR2_ENDPOINT=http://trust-registry-2:8082
+    depends_on:
+      - trust-registry-1
+      - trust-registry-2
+    restart: always

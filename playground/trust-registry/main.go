@@ -18,16 +18,31 @@ import (
 	"github.com/andorsk/tswg-trust-registry-protocol/reference_implementation/pkg/utils"
 )
 
-// LoadRegistry loads the trust registry data from a JSON/YAML file.
+// LoadRegistry loads the trust registry data from a JSON/YAML file or environment variable.
 func LoadRegistry(path string) (*utils.TrustRegistry, error) {
 	var registry utils.TrustRegistry
-	dat, err := os.ReadFile(path)
+	
+	// Check if REGISTRY_DATA environment variable is set
+	if registryData := os.Getenv("REGISTRY_DATA"); registryData != "" {
+		log.Printf("Loading registry from REGISTRY_DATA environment variable")
+		err := yaml.Unmarshal([]byte(registryData), &registry)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse REGISTRY_DATA: %v", err)
+		}
+		return &registry, nil
+	}
+	
+	// Check if REGISTRY_PATH environment variable is set
+	registryPath := getEnv("REGISTRY_PATH", path)
+	log.Printf("Loading registry from file: %s", registryPath)
+	
+	dat, err := os.ReadFile(registryPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read registry file: %v", err)
 	}
 	err = yaml.Unmarshal(dat, &registry)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse registry file: %v", err)
 	}
 	return &registry, nil
 }
@@ -61,17 +76,33 @@ func swaggerUI(specURL string) string {
 </html>`)
 }
 
+// getEnv gets environment variable value or returns default if not present
+func getEnv(key, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists && value != "" {
+		return value
+	}
+	return defaultValue
+}
+
 func main() {
 	// Command-line flags
 	var port string
 	var baseURL string
+	var registryName string
 
-	flag.StringVar(&port, "port", "5005", "Port to listen on (e.g., 5005)")
-	flag.StringVar(&baseURL, "base-url", "http://localhost", "Base URL for services")
+	// Define flags with defaults (will be overridden by env vars if present)
+	flag.StringVar(&port, "port", getEnv("PORT", "8082"), "Port to listen on")
+	flag.StringVar(&baseURL, "base-url", getEnv("BASE_URL", "http://localhost"), "Base URL for services")
+	flag.StringVar(&registryName, "registry-name", getEnv("REGISTRY_NAME", "Default-TR"), "Registry name")
 	flag.Parse()
 
+	log.Printf("Starting Trust Registry: %s", registryName)
+	log.Printf("Port: %s", port)
+	log.Printf("Base URL: %s", baseURL)
+
 	// Load the trust registry
-	registry, err := LoadRegistry("data/registry.json")
+	defaultRegistryPath := "data/registry.json"
+	registry, err := LoadRegistry(defaultRegistryPath)
 	if err != nil {
 		log.Fatalf("Failed to load registry: %v", err)
 	}
@@ -139,7 +170,7 @@ func main() {
 	eco := utils.NewEcosystem(utils.EcosystemMetadata{
 		DID:         ecosystemDID, // root ecosystem DID
 		Type:        "Root",
-		Description: "Root ecosystem",
+		Description: fmt.Sprintf("Root ecosystem for %s", registryName),
 	})
 
 	// Example: add an authorization type to your new root ecosystem.
@@ -174,6 +205,12 @@ func main() {
 	// Serve Terms file
 	r.Get("/terms", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "terms.html")
+	})
+
+	// Add status endpoint
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"status":"ok","name":"%s"}`, registryName)
 	})
 
 	// Start the server

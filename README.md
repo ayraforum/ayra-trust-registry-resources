@@ -10,16 +10,17 @@ are non-normative and serve as guides to help you understand the steps needed to
 * [Profile](./profile.md) - Ayra Authority Verification Profile required to register into the Ayra Trust Network.
 
 ## [Guides](./guides)
-* [Implementers Guide](./guides/implementers_guide.md) - Implementation guide to connect to the Ayra Trust Network.
+* [Implementers Guide](https://ayraforum.github.io/ayra-trust-registry-resources/guides/) - Implementation guide to connect to the Ayra Trust Network.
+* [Playground Guid](https://ayraforum.github.io/ayra-trust-registry-resources/playground/) -- How to run the playground
 
 ## [Tools](./tools)
-* [EGF DID Creator](./tools/did_creator_ui.py) -- Create an Ayra Profile aligned DID for an ecosystem. 
+* [EGF DID Creator](./tools/did_creator_ui.py) -- Create an Ayra Profile aligned DID for an ecosystem.  (Python)
 
-## [Samples](./samples)
-* [Sample Trust Registry](./samples/trust-registry) -- Sample Trust Registry
-* [Sample Verifier](./samples/verifier) -- Sample Trust Registry
+## [Playground](./playground)
+* [Sample Trust Registry](./playground/trust-registry) -- Sample Trust Registry Code To Run (Go)
+* [Sample Verifier](./playground/verifier) -- Sample Verifier Code To Run (Python)
 
 ## [Tests](./tests)
-* [API Conformance Test](./tests/api_conformance_test.py) - Conformance Testing Tool for testing a Trust Registry endpoint. 
-* [DID Conformance Test](./tests/did_conformance_test.py) - Checks conformance of the Ecosystem DID that is being registered. `TODO`
+* [API Conformance Test](./tests/api_conformance_test.py) - Conformance Testing Tool for testing a Trust Registry endpoint. (Python)
+* [DID Conformance Test](./tests/did_conformance_test.py) - Checks conformance of the Ecosystem DID that is being registered. (TODO) 
 * [Ayra Authority Verification Profile Conformance Test](tests/authority_profile_test.py) -- Checks that an ecosystem is compliant to register in the Ayra Trust Network `TODO`
