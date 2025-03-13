@@ -1,0 +1,42 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+title Trust Registry Protocol (TRQP) Model with Grouped Components
+' Set a left-to-right layout for improved visual grouping
+LAYOUT_LEFT_RIGHT()
+' =========================
+' Ecosystem Group
+' =========================
+System_Boundary(EcosystemBoundary, "Ecosystem Components") {
+    System(GoverningAuthority, "Governing Authority", "Controls Ecosystem and publishes Authority Statements on behalf of Ecosystem")
+    
+    Container(Ecosystem, "Ecosystem", "Identifier", "An identified ecosystem governed by a Governing Authority")
+    
+    System_Boundary(EcosystemAuthorityStatementsBoundary, "Authority Statements (Ecosystem)") {
+         Container(AuthorityStatements, "Authority Statements", "Authorization, Recognition, Metadata (incl. EGF Document)", "Published by Governing Authority on behalf of Ecosystem")
+    }
+}
+' =========================
+' Trust Registry Group
+' =========================
+System_Boundary(TRBoundary, "Trust Registry (TR) Components") {
+    System(TROperator, "TR Operator", "Operates and controls the Trust Registry (TR)")
+    
+    Container(TrustRegistry, "Trust Registry", "Identifier", "Delegated registry for serving Authority Statements and maintaining metadata")
+    
+    System_Boundary(TRAuthorityStatementsBoundary, "TR Authority Statements") {
+         Container(TRAuthorityStatements, "TR Authority Statements", "Metadata", "Served by TR itself")
+    }
+}
+' =========================
+' Relationships
+' =========================
+' Governing Authority controls Ecosystem and publishes Authority Statements
+Rel(GoverningAuthority, Ecosystem, "controls")
+Rel(GoverningAuthority, AuthorityStatements, "publishes on behalf of Ecosystem")
+' Ecosystem delegates to and Trust Registry serves Authority Statements
+Rel(Ecosystem, TrustRegistry, "delegates to serve Authority Statements")
+Rel(TrustRegistry, AuthorityStatements, "serves (on behalf of Ecosystem)")
+' TR Operator controls the Trust Registry and it serves its own Authority Statements
+Rel(TROperator, TrustRegistry, "controls / operates")
+Rel(TrustRegistry, TRAuthorityStatements, "serves")
+@enduml
