@@ -10,6 +10,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 
 	"github.com/andorsk/tswg-trust-registry-protocol/reference_implementation/gen/admin"
 	"github.com/andorsk/tswg-trust-registry-protocol/reference_implementation/gen/trqp/v2"
@@ -186,6 +187,16 @@ func main() {
 
 	// Create Chi router
 	r := chi.NewRouter()
+
+	// Setup CORS
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"*"}, // Allow all origins
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 
 	// Serve static YAML specs
 	r.Get("/admin/openapi.yaml", serveYAML("api/admin.yaml"))
