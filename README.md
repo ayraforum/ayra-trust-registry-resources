@@ -1,26 +1,42 @@
 # Ayra Trust Registry Resources
 
-The following resources are designed to support implementers and those
-interested in connecting with the Ayra Trust Network. Many of these resources
-are non-normative and serve as guides to help you understand the steps needed to
-    interact with your ecosystem.
+This repository contains resources for implementers and organizations interested in connecting with the Ayra Trust Network. These resources include specifications, guides, tools, sample code, and conformance tests to help you understand and implement the requirements for interacting with the Ayra ecosystem.
 
 ## Normative Resources
-* [Swagger YAML](./swagger.yaml) - RESTFul specification to describe the required endpoints for any TRQP compliant registry in the network.
+
+* [Swagger YAML](./swagger.yaml) - RESTful API specification describing the required endpoints for any TRQP-compliant registry in the network.
 * [Profile](./profile.md) - Ayra Authority Verification Profile required to register into the Ayra Trust Network.
 
-## [Guides](./guides)
-* [Implementers Guide](https://ayraforum.github.io/ayra-trust-registry-resources/guides/) - Implementation guide to connect to the Ayra Trust Network.
-* [Playground Guide](https://ayraforum.github.io/ayra-trust-registry-resources/playground/) -- How to run the playground
+## Guides
 
-## [Tools](./tools)
-* [EGF DID Creator](./tools/did_creator_ui.py) -- Create an Ayra Profile aligned DID for an ecosystem.  (Python)
+* [Implementers Guide](./guides/implementers_guide.md) - Comprehensive guide for connecting to the Ayra Trust Network.
+* [Playground Guide](./playground/playground.md) - Instructions for setting up and using the testing playground environment.
 
-## [Playground](./playground)
-* [Sample Trust Registry](./playground/trust-registry) -- Sample Trust Registry Code To Run (Go)
-* [Sample Verifier](./playground/verifier) -- Sample Verifier Code To Run (Python)
+## Tools
 
-## [Tests](./tests)
-* [API Conformance Test](./tests/api_conformance_test.py) - Conformance Testing Tool for testing a Trust Registry endpoint. (Python)
-* [DID Conformance Test](./tests/did_conformance_test.py) - Checks conformance of the Ecosystem DID that is being registered. (TODO) 
-* [Ayra Authority Verification Profile Conformance Test](tests/authority_profile_test.py) -- Checks that an ecosystem is compliant to register in the Ayra Trust Network `TODO`
+* [EGF DID Creator](./tools/did_creator_ui.py) - Python tool to create an Ayra Profile-aligned DID for an ecosystem.
+* [DID Peer Utils](./tools/did_peer_utils.py) - Utility functions for DID generation and resolution.
+
+## Playground
+
+The playground provides a working example environment with sample implementations:
+
+* [Sample Trust Registry](./playground/trust-registry/) - Go implementation of a Trust Registry compliant with the TRQP specification.
+* [Sample Verifier](./playground/verifier/) - Python implementation of a verifier that can query the Trust Registry.
+
+## Tests
+
+* [API Conformance Test](./tests/api_conformance_test.py) - Tool for testing compliance of a Trust Registry endpoint with the TRQP specification.
+* [DID Conformance Test](./tests/did_conformance_test.py) - Tool for checking conformance of the Ecosystem DID being registered. *(TODO)*
+* [Ayra Authority Verification Profile Conformance Test](./tests/authority_profile_test.py) - Tool for checking that an ecosystem is compliant to register in the Ayra Trust Network. *(TODO)*
+
+## Getting Started
+
+1. Read the [Implementers Guide](./guides/implementers_guide.md) to understand the core concepts.
+2. Set up the [Playground](./playground/playground.md) to experiment with the sample implementations.
+3. Use the [Tools](./tools/) to create and manage DIDs for your ecosystem.
+4. Run the [Tests](./tests/) to validate your implementation against the Ayra Trust Network requirements.
+
+## Contributing
+
+We welcome contributions to improve these resources. Please see [CONTRIBUTING](./CONTRIBUTING) for details on how to contribute.

@@ -1,30 +1,61 @@
 # Trust Registry Reference Implementation
 
-This PR provides a super simple ( as simple as possible ) trust registry managed by a git JSON document. It supports
-TRQP out of the box, and could easily become a reference implementation for the TRQP as well. 
+This directory contains a simple reference implementation of a Trust Registry that supports the TRQP (Trust Registry Query Protocol) specification. The registry is managed using a Git JSON document and provides a complete implementation of the TRQP API.
 
-**Features**
+## Features
 
-* TRQP API w/ Redoc Frontend
-* Entire Registry Managed Over a JSON file
-  * Multiple EGF's allowed
-  * Organization and Ecosystem Registration Allowed w/ 2 participants; GAN as an organization and ecosystem, and
-    Velocity Network, as an organization and ecosystem. 
-  *  Sample Namespacing provided.
+- Complete TRQP API implementation with Redoc Frontend documentation
+- Registry data stored in a simple JSON file (`data/registry.json`)
+- Support for multiple Ecosystem Governance Frameworks (EGFs)
+- Organization and Ecosystem registration
+- Sample namespacing implementation
 
-The registry is described in the `data/registry.json` file. The `registry.json` file is read and then the output is
-provided over the TRQP handlers. 
+## Design Philosophy
 
-**Design Considerations:** 
+This implementation is intentionally kept as simple as possible to serve as a clear reference for the minimum viable implementation required for TRQP compliance. It focuses on the core functionality needed for Phase 1 of the Ayra Trust Network.
 
-The current demo app adds a _lot_ of complexity, and the point of this was to _simplify_ as much as possible. This was particularly important when thinking about the data models. This is intentionally as simple as possible and intended to help us explore the minimum viable implementation for Phase 1.  
+## Data Model
 
-**Example Queries:
+The registry data is stored in `data/registry.json`. This file defines:
 
-* Get Entity Status
-`curl http://localhost:8082/entitities/did:web:samplenetwork.foundation`
+- Trust Registry information
+- Registered organizations and ecosystems
+- Authorization mappings
+- Namespace definitions
 
+## Running the Trust Registry
+
+### Using Docker (Recommended)
+
+From the parent playground directory:
+```bash
+docker-compose up -d
 ```
+
+### Manual Setup
+
+1. Ensure Go is installed on your system
+2. Initialize the Go modules:
+   ```bash
+   go mod tidy
+   ```
+3. Run the application:
+   ```bash
+   go run main.go
+   ```
+
+The service will be available at http://localhost:8082 by default.
+
+## Example Queries
+
+### Get Entity Status
+
+```bash
+curl http://localhost:8082/entities/did:web:samplenetwork.foundation
+```
+
+Response:
+```json
 {
   "entityDataValidity": {
     "validFromDT": "2024-09-10T12:00:00Z",
@@ -39,17 +70,27 @@ The current demo app adds a _lot_ of complexity, and the point of this was to _s
   },
   "secondaryTrustRegistries": []
 }
+```
 
-* Get Lookup
+### Get Namespace Lookup
 
-`curl 'http://localhost:8082/lookup/namespaces?egfURI=did:web:samplenetwork2.com'
+```bash
+curl 'http://localhost:8082/lookup/namespaces?egfURI=did:web:samplenetwork2.com'
+```
 
-```sh
+Response:
+```json
 ["foundation.samplenetwork.certified.person.verify","foundation.samplenetwork.certified.person.issue"]
 ```
 
-```
-**To Use**
+## Customizing the Trust Registry
 
-1. `go mod tidy`
-2. `go run main.go`
+To customize the registry for your needs:
+
+1. Edit the `data/registry.json` file to define your own organizations, ecosystems, and namespaces
+2. Modify the API handlers in the `api/` directory if you need to extend the functionality
+3. Update the `main.go` file to configure your specific deployment requirements
+
+## API Documentation
+
+The API documentation is available at the `/redoc.html` endpoint when the service is running.
