@@ -24,3 +24,8 @@ are non-normative and serve as guides to help you understand the steps needed to
 * [API Conformance Test](./tests/api_conformance_test.py) - Conformance Testing Tool for testing a Trust Registry endpoint. (Python)
 * [DID Conformance Test](./tests/did_conformance_test.py) - Checks conformance of the Ecosystem DID that is being registered. (TODO) 
 * [Ayra Authority Verification Profile Conformance Test](tests/authority_profile_test.py) -- Checks that an ecosystem is compliant to register in the Ayra Trust Network `TODO`
+
+## Videos
+
+The following Loom videos provide a quick description of key assets and resources.
+
