@@ -53,9 +53,6 @@ type AuthorizationResponse struct {
 	// Message Additional context or information regarding the authorization status.
 	Message string `json:"message"`
 
-	// Recognized Indicates whether the entity is recognized by the Trust Registry.
-	Recognized bool `json:"recognized"`
-
 	// ResponseTime Timestamp when the response was generated.
 	ResponseTime time.Time `json:"response_time"`
 }

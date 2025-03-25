@@ -438,9 +438,6 @@ components:
         egf_did:
           type: string
           description: EGF DID this authorization response relates to.
-        recognized:
-          type: boolean
-          description: Indicates whether the entity is recognized by the Trust Registry.
         authorized:
           type: boolean
           description: Specifies whether the entity is authorized under the provided authorization ID.
