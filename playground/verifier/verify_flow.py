@@ -7,8 +7,12 @@ from datetime import datetime, timezone
 import sys
 import uuid  # For generating nonce
 import jwt  # PyJWT library
+import os
 
-DEFAULT_DID_RESOLVER_URL = "https://dev.uniresolver.io/1.0/identifiers/"
+# Use environment variables or defaults for service discovery
+TR1_ENDPOINT = os.getenv("TR1_ENDPOINT", "http://ayra:8082")
+TR2_ENDPOINT = os.getenv("TR2_ENDPOINT", "http://ecosystem:8082")
+DEFAULT_DID_RESOLVER_URL = os.getenv("DEFAULT_DID_RESOLVER_URL", "https://dev.uniresolver.io/1.0/identifiers/")
 
 
 def decode_jws(jws_token, public_key=None):
@@ -58,6 +62,7 @@ def resolve_did(did, resolver_url):
     """
     resolver_endpoint = urljoin(resolver_url, did)
     try:
+        print(f"Resolving DID at: {resolver_endpoint}")
         response = requests.get(resolver_endpoint)
         # response.raise_for_status()
         did_document = response.json()
@@ -170,6 +175,23 @@ def format_time(time_str=None):
         return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def modify_endpoint_for_docker(endpoint):
+    """
+    Modify endpoints to work in Docker environment.
+    Convert localhost:port references to container names.
+    """
+    if "://localhost:" in endpoint:
+        # For localhost:8082, use ayra container
+        if ":8082" in endpoint or ":5005" in endpoint:
+            endpoint = endpoint.replace("://localhost:", "://ayra:")
+        # For localhost:8083, use ecosystem container
+        elif ":8083" in endpoint or ":5006" in endpoint:
+            endpoint = endpoint.replace("://localhost:", "://ecosystem:")
+    
+    print(f"Using endpoint: {endpoint}")
+    return endpoint
+
+
 def ecosystem_recognition_query(
     egf_did, ecosystem_id, time, scope, nonce, resolver_url
 ):
@@ -209,6 +231,9 @@ def ecosystem_recognition_query(
         tr_endpoint = get_service_endpoint(tr_did_doc, "TRQP")
         if not tr_endpoint:
             raise Exception("No HTTP endpoint found in TR DID Document under 'TRQP' service.")
+            
+        # Modify endpoint for Docker networking
+        tr_endpoint = modify_endpoint_for_docker(tr_endpoint)
         error_details["tr_endpoint"] = tr_endpoint
             
         # Step 5: Construct the URL for the ecosystem recognition query
@@ -293,6 +318,9 @@ def authorization_query(
         tr_endpoint = get_service_endpoint(tr_did_doc, "TRQP")
         if not tr_endpoint:
             raise Exception("No HTTP endpoint found in TR DID Document under 'TRQP' service.")
+            
+        # Modify endpoint for Docker networking
+        tr_endpoint = modify_endpoint_for_docker(tr_endpoint)
         error_details["tr_endpoint"] = tr_endpoint
             
         # Step 5: Construct the URL for the authorization query
