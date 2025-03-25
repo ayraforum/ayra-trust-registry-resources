@@ -79,6 +79,7 @@ def resolve_did(did, resolver_url):
 def get_service_endpoint(did_document, service_type):
     """
     Extracts the service endpoint URL from the DID Document based on service type.
+    Handles different service endpoint formats including abbreviated versions.
     """
     if not did_document:
         raise Exception("DID document is empty or invalid")
@@ -93,12 +94,58 @@ def get_service_endpoint(did_document, service_type):
             
             # Handle different service endpoint formats
             service_endpoint = service.get("serviceEndpoint")
+            
+            # Standard format with 'uri' property
             if isinstance(service_endpoint, dict) and "uri" in service_endpoint:
                 return service_endpoint.get("uri")
+            
+            # Standard format with direct string
             elif isinstance(service_endpoint, str):
                 return service_endpoint
+            
+            # Check abbreviated formats and convert to standard format
+            # 'p' -> 'profile', 'u' -> 'uri', 'i' -> 'integrity'
+            elif isinstance(service_endpoint, dict):
+                # Handle both abbreviated and standard property names
+                
+                # First check for standard 'uri' property
+                if "uri" in service_endpoint:
+                    uri_value = service_endpoint.get("uri")
+                    if isinstance(uri_value, list) and len(uri_value) > 0:
+                        return uri_value[0]
+                    return uri_value
+                
+                # Then check for abbreviated 'u' property
+                elif "u" in service_endpoint:
+                    u_value = service_endpoint.get("u")
+                    if isinstance(u_value, list) and len(u_value) > 0:
+                        return u_value[0]
+                    return u_value
+                
+                # Create standard format from abbreviated
+                standard_endpoint = {}
+                if "p" in service_endpoint:
+                    standard_endpoint["profile"] = service_endpoint.get("p")
+                if "u" in service_endpoint:
+                    standard_endpoint["uri"] = service_endpoint.get("u")
+                if "i" in service_endpoint:
+                    standard_endpoint["integrity"] = service_endpoint.get("i")
+                
+                # Convert abbreviated format to standard and try again
+                print(f"Converting abbreviated format to standard: {standard_endpoint}")
+                
+                # Extract URI from standard format
+                uri_value = standard_endpoint.get("uri")
+                if uri_value:
+                    if isinstance(uri_value, list) and len(uri_value) > 0:
+                        return uri_value[0]
+                    return uri_value
+                
+                print(f"Service endpoint does not contain a URI: {service_endpoint}", file=sys.stderr)
+                raise Exception(f"Service endpoint does not contain a URI: {service_endpoint}")
             else:
-                raise Exception(f"Invalid service endpoint format: {service_endpoint}")
+                print(f"Unsupported service endpoint format: {service_endpoint}", file=sys.stderr)
+                raise Exception(f"Unsupported service endpoint format: {service_endpoint}")
                 
     print(f"Service type '{service_type}' not found in DID Document.", file=sys.stderr)
     raise Exception(f"Service type '{service_type}' not found in DID document")
