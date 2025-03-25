@@ -9,9 +9,7 @@ import uuid  # For generating nonce
 import jwt  # PyJWT library
 import os
 
-# Use environment variables or defaults for service discovery
-TR1_ENDPOINT = os.getenv("TR1_ENDPOINT", "http://ayra:8082")
-TR2_ENDPOINT = os.getenv("TR2_ENDPOINT", "http://ecosystem:8082")
+# Use environment variable or default for the DID resolver
 DEFAULT_DID_RESOLVER_URL = os.getenv("DEFAULT_DID_RESOLVER_URL", "https://dev.uniresolver.io/1.0/identifiers/")
 
 
@@ -177,17 +175,8 @@ def format_time(time_str=None):
 
 def modify_endpoint_for_docker(endpoint):
     """
-    Modify endpoints to work in Docker environment.
-    Convert localhost:port references to container names.
+    Print endpoint information (no modification needed with BASE_URL)
     """
-    if "://localhost:" in endpoint:
-        # For localhost:8082, use ayra container
-        if ":8082" in endpoint or ":5005" in endpoint:
-            endpoint = endpoint.replace("://localhost:", "://ayra:")
-        # For localhost:8083, use ecosystem container
-        elif ":8083" in endpoint or ":5006" in endpoint:
-            endpoint = endpoint.replace("://localhost:", "://ecosystem:")
-    
     print(f"Using endpoint: {endpoint}")
     return endpoint
 

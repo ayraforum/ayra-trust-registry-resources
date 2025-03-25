@@ -85,6 +85,19 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
+// constructServiceUrl correctly handles baseURL that may already include port
+func constructServiceUrl(baseURL, path string) string {
+	// Remove any trailing slash from the baseURL
+	baseURL = strings.TrimSuffix(baseURL, "/")
+	
+	// Ensure path starts with a slash
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	
+	return baseURL + path
+}
+
 func main() {
 	// Command-line flags
 	var port string
@@ -108,6 +121,13 @@ func main() {
 		log.Fatalf("Failed to load registry: %v", err)
 	}
 
+	// Construct service URLs
+	apiUrl := constructServiceUrl(baseURL, "/api/v2/")
+	termsUrl := constructServiceUrl(baseURL, "/terms")
+	
+	log.Printf("API URL: %s", apiUrl)
+	log.Printf("Terms URL: %s", termsUrl)
+
 	// -------------------------------------
 	// 1) Generate the Trust Registry DID
 	// -------------------------------------
@@ -118,7 +138,7 @@ func main() {
 				Type: "TRQP",
 				ServiceEndpoint: utils.ServiceProfile{
 					Profile:   "https://trustoverip.org/profiles/trp/v2",
-					URI:       baseURL + ":" + port + "/api/v2/",
+					URI:       apiUrl,
 					Integrity: "122041dd7b6443542e75701aa98a0c235951a28a0d851b11564d20022ab11d2589a8",
 				},
 			},
@@ -139,7 +159,7 @@ func main() {
 				Type: "egfURI",
 				ServiceEndpoint: utils.ServiceProfile{
 					Profile:   "https://trustoverip.org/profiles/trp/egfURI/v1",
-					URI:       baseURL + ":" + port + "/terms",
+					URI:       termsUrl,
 					Integrity: "122041dd7b6443542e75701aa98a0c235951a28a0d851b11564d20022ab11d2589a8",
 				},
 			},
