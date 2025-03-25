@@ -6,43 +6,6 @@ from cryptography.hazmat.primitives.asymmetric import ed25519, x25519
 from cryptography.hazmat.primitives import serialization
 from base58 import b58encode
 
-# Mappings for abbreviation/expansion
-full_to_abbreviation = {
-    "profile": "profile",
-    "type": "type",
-    "serviceEndpoint": "serviceEndpoint",
-    "routingKeys": "routingKeys",
-    "accept": "accept",
-    "DIDCommMessaging": "dm",
-    "integrity": "integrity",
-    "uri": "uri",
-}
-abbreviation_to_full = {v: k for k, v in full_to_abbreviation.items()}
-
-
-def abbreviate_service(obj):
-    """Convert full service fields to abbreviations."""
-    if isinstance(obj, dict):
-        return {
-            full_to_abbreviation.get(k, k): abbreviate_service(v)
-            for k, v in obj.items()
-        }
-    elif isinstance(obj, list):
-        return [abbreviate_service(elem) for elem in obj]
-    return obj
-
-
-def expand_service(obj):
-    """Convert abbreviated service fields to full names."""
-    if isinstance(obj, dict):
-        return {
-            abbreviation_to_full.get(k, k): expand_service(v) for k, v in obj.items()
-        }
-    elif isinstance(obj, list):
-        return [expand_service(elem) for elem in obj]
-    return obj
-
-
 def generate_did_peer2(config_data, method_prefix="did:peer:2"):
     """Generate a DID:peer:2 identifier with service endpoints."""
     # Generate Ed25519 Key
@@ -66,10 +29,9 @@ def generate_did_peer2(config_data, method_prefix="did:peer:2"):
     # Build DID segments: V=auth key, E=keyAgreement
     did_parts = [method_prefix, "V" + ed_pub_mb, "E" + x25519_pub_mb]
 
-    # Abbreviate and encode services
+    # Encode services - using full property names
     for svc in config_data.get("services", []):
-        abbrev = abbreviate_service(svc)
-        svc_bytes = json.dumps(abbrev).encode()
+        svc_bytes = json.dumps(svc).encode()
         b64 = base64.urlsafe_b64encode(svc_bytes).decode().rstrip("=")
         did_parts.append("S" + b64)
 
@@ -153,16 +115,30 @@ def resolve_did_peer2(did_str, method_prefix="did:peer:2"):
             # Decode the service segment
             padding_needed = (4 - len(rest) % 4) % 4
             svc_bytes = base64.urlsafe_b64decode(rest + ("=" * padding_needed))
-            expanded = expand_service(json.loads(svc_bytes))
+            service = json.loads(svc_bytes)
 
-            if not isinstance(expanded, dict):
+            if not isinstance(service, dict):
                 raise ValueError("Decoded service is not an object")
 
-            expanded["id"] = (
-                f"#service-{service_count}" if service_count else "#service"
-            )
-            service_count += 1
-            services.append(expanded)
+            # Fill in an ID if one is missing
+            if "id" not in service:
+                service["id"] = f"#service-{service_count}" if service_count else "#service"
+                service_count += 1
+                
+            # Ensure we're using full property names (handling any abbreviated that might be in the DID)
+            if "serviceEndpoint" in service and isinstance(service["serviceEndpoint"], dict):
+                endpoint = service["serviceEndpoint"]
+                
+                # Convert any abbreviated properties to full names
+                if "p" in endpoint and "profile" not in endpoint:
+                    endpoint["profile"] = endpoint.pop("p")
+                if "u" in endpoint and "uri" not in endpoint:
+                    uri_value = endpoint.pop("u")
+                    endpoint["uri"] = uri_value[0] if isinstance(uri_value, list) else uri_value
+                if "i" in endpoint and "integrity" not in endpoint:
+                    endpoint["integrity"] = endpoint.pop("i")
+                    
+            services.append(service)
 
         else:
             raise ValueError(f"Unknown purpose code '{purpose}' in segment '{seg}'")

@@ -32,7 +32,7 @@ The playground provides a working example environment with sample implementation
 
 ## Getting Started
 
-1. Read the [Ayra Authority Verification Profile](https://ayraforum.github.io/ayra-trust-registry-resources/) to see the basic authority verification requirement.s 
+1. Read the [Ayra Authority Verification Profile](https://ayraforum.github.io/ayra-trust-registry-resources/) to see understand the basic verification requirements. 
 2. Read the [Implementers Guide](./guides/implementers_guide.md) to understand the core concepts of how to interact with the Ayra Trust Network according to your ecosystem. 
 3. Set up the [Playground](./playground/playground.md) to experiment with the sample implementations.
 4. Use the [Tools](./tools/) to create and manage DIDs for your ecosystem.

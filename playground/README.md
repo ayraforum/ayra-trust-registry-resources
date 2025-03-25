@@ -13,7 +13,7 @@ This directory contains a complete playground environment for experimenting with
 The easiest way to run the playground is using Docker Compose:
 
 ```bash
-docker-compose up -d
+docker-compose up
 ```
 
 This will start all services:

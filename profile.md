@@ -1,4 +1,4 @@
-# **Ayra TRQP Implementation Profile**
+# **Ayra Authority Verification Profile (w/ TRQP Compliant OpenAPI spec)**
 
 This specification introduces the Ayra TRQP Profile that will be used to describe the Ayra Trust Network. 
 
@@ -16,7 +16,7 @@ Learn about the playground at [Playground](https://ayraforum.github.io/ayra-trus
 Check the [API documentation](https://ayraforum.github.io/ayra-trust-registry-resources/api-docs/)
 
 
-# **Profile Overview**  {#profile-overview}
+# **Profile Overview**  
 
 | Component | Authority Verification Profile API Based |
 | :---- | :---- |
@@ -32,7 +32,7 @@ Check the [API documentation](https://ayraforum.github.io/ayra-trust-registry-re
 | **Authorized registries lookup protocol** | Within DID Document |
 
 
-# **Identifier Requirements** {#identifier-requirements}
+# **Identifier Requirements** 
 
 ## **Ecosystem Identifiers**
 
@@ -62,11 +62,11 @@ with hash \<TODO\>.
 
 All uris defined in the service profile MUST describe valid trust metaregistries for the cluster.  
 
-## **Ayra Trust Network Valid DID Methods** {#ayra-trust-network-valid-did-methods}
+## **Ayra Trust Network Valid DID Methods**
 
 Currently, the Ayra Trust Network only accepts **did:webvh**.
 
-# **Security and Privacy Requirements** {#security-and-privacy-requirements}
+# **Security and Privacy Requirements** 
 
 ### **Trust Registries**
 
@@ -81,7 +81,7 @@ their keys for the DID Document and the metaregistries that serve the state of
 the cluster.
 
 
-# **Protocol Requirements** {#protocol-requirements}
+# **Protocol Requirements** 
 
 All Trust Registries **MUST** serve the [RESTful
 binding](?tab=t.0#heading=h.n2gndmivxfsb) per the specification. 
@@ -104,7 +104,7 @@ Document.
 | **Verifier** | The end authority verifier that is interested in verifying not only the cryptography, but the validity of the author for the set of claims.  |
 | **Ecosystem** | Ecosystems will leverage the TR Vendors to manage their authority state. Each ecosystem must have sovereignty over their authority state.  |
 
-# **Versioning and Backwards Compatibility** {#versioning-and-backwards-compatibility}
+# **Versioning and Backwards Compatibility** 
 
 When the profile version is updated, the service profile document will also
 update, providing a hash. 
