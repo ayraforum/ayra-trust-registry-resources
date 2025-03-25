@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -201,44 +202,49 @@ func (impl *TRQPHandler) GetTrustRegistryMetadata(w http.ResponseWriter, r *http
 	// Define extended metadata that includes ecosystem and trust registry DIDs
 	type ExtendedMetadata struct {
 		trqp.TrustRegistryMetadata
-		EcosystemDID     string `json:"ecosystem_did,omitempty"`
-		TrustRegistryDID string `json:"trust_registry_did,omitempty"`
+		EcosystemDID     string `json:"ecosystem_did"`
+		TrustRegistryDID string `json:"trust_registry_did"`
 	}
 
-	// Get the ecosystem DID from query parameters, if provided
-	var ecosystemDID string
-	if params.EgfDid != nil && *params.EgfDid != "" {
-		ecosystemDID = *params.EgfDid
+	// First priority: Use DIDs from environment variables (generated at runtime)
+	foundEcosystemDID := os.Getenv("ECOSYSTEM_DID")
+	foundTrustRegistryDID := os.Getenv("TRUST_REGISTRY_DID")
 
-		// Verify that the ecosystem exists
-		_, err := impl.Registry.GetEcosystemByDID(ecosystemDID)
-		if err != nil {
-			writeError(w, http.StatusNotFound, "Ecosystem not found", err.Error())
-			return
-		}
-	} else {
-		// If no ecosystem DID was provided, use the first one in the registry if available
-		if len(impl.Registry.Ecosystems) > 0 {
-			ecosystemDID = impl.Registry.Ecosystems[0].Metadata.DID
-		}
+	// Log the DIDs from environment
+	fmt.Printf("Using DIDs from environment - Ecosystem: %s, TrustRegistry: %s\n",
+		foundEcosystemDID, foundTrustRegistryDID)
+
+	// Second priority: If environment variables are empty, try the request params
+	if foundEcosystemDID == "" && params.EgfDid != nil && *params.EgfDid != "" {
+		foundEcosystemDID = *params.EgfDid
 	}
 
-	// Create the response with additional fields
+	// Third priority: If still empty, use registry data
+	if foundEcosystemDID == "" && len(impl.Registry.Ecosystems) > 0 {
+		foundEcosystemDID = impl.Registry.Ecosystems[0].Metadata.DID
+	}
+
+	if foundTrustRegistryDID == "" {
+		foundTrustRegistryDID = impl.Registry.Metadata.Identifier
+	}
+
+	// Create controllers array with ecosystem DID
+	var controllers []string
+	if foundEcosystemDID != "" {
+		controllers = append(controllers, foundEcosystemDID)
+	}
+
+	// Create the response
 	resp := ExtendedMetadata{
 		TrustRegistryMetadata: trqp.TrustRegistryMetadata{
 			Name:          impl.Registry.Metadata.Name,
-			Id:            impl.Registry.Metadata.Identifier,
+			Id:            foundTrustRegistryDID,
 			Description:   impl.Registry.Metadata.Description,
-			DefaultEgfDid: &ecosystemDID,
+			DefaultEgfDid: &foundEcosystemDID,
+			Controllers:   controllers,
 		},
-		EcosystemDID:     ecosystemDID,
-		TrustRegistryDID: impl.Registry.Metadata.Identifier,
-	}
-
-	// Add controllers if available
-	if ecosystemDID != "" {
-		controllers := []string{ecosystemDID}
-		resp.Controllers = controllers
+		EcosystemDID:     foundEcosystemDID,
+		TrustRegistryDID: foundTrustRegistryDID,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

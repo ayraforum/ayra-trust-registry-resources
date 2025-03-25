@@ -160,18 +160,34 @@ func main() {
 	}
 	log.Printf("Generated Ecosystem DID: %s", ecosystemDID)
 
-	// -------------------------------------
-	// Add the Ecosystem to our in-memory registry
-	// Use the Ecosystem DID as the root ecosystem
-	// -------------------------------------
-	impl := &v2trqp.TRQPHandler{Registry: registry}
+	// Set the environment variables that will be used by the TRQP handler
+	// This must be done BEFORE the TRQP handler is created
+	os.Setenv("TRUST_REGISTRY_DID", trustRegistryDID)
+	os.Setenv("ECOSYSTEM_DID", ecosystemDID)
+	
+	// Log the environment variable setting
+	log.Printf("Setting TRUST_REGISTRY_DID: %s", trustRegistryDID)
+	log.Printf("Setting ECOSYSTEM_DID: %s", ecosystemDID)
+
+	// Create the TRQP handler with the registry
+	impl := &v2trqp.TRQPHandler{
+		Registry: registry,
+	}
+	
+	// Create the registry service
 	svc := &registrysvc.TrustRegistryService{Registry: registry}
 	registryHandlers := registrysvc.NewTrustRegistryHandlers(svc)
 
+	// Create a new ecosystem for runtime use
 	eco := utils.NewEcosystem(utils.EcosystemMetadata{
 		DID:         ecosystemDID, // root ecosystem DID
 		Type:        "Root",
 		Description: fmt.Sprintf("Root ecosystem for %s", registryName),
+		Name:        registryName,
+		Status: utils.Status{
+			Active: true,
+			Detail: "Active ecosystem",
+		},
 	})
 
 	// Example: add an authorization type to your new root ecosystem.
@@ -221,7 +237,8 @@ func main() {
 	// Add status endpoint
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"status":"ok","name":"%s"}`, registryName)
+		fmt.Fprintf(w, `{"status":"ok","name":"%s","trust_registry_did":"%s","ecosystem_did":"%s"}`, 
+			registryName, trustRegistryDID, ecosystemDID)
 	})
 
 	// Start the server
