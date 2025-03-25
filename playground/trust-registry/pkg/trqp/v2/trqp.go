@@ -190,7 +190,6 @@ func (impl *TRQPHandler) CheckAuthorizationStatus(
 		EgfDid:       &egfDid,
 		ExpiryTime:   &expiry,
 		Message:      "Authorization status evaluation",
-		Recognized:   true,
 		ResponseTime: time.Now(),
 		Jws:          &jws,
 	}
