@@ -88,3 +88,21 @@ For active development, you may prefer running the components manually:
    pip install -r requirements.txt
    streamlit run ui.py
    ```
+
+## Environment Configuration
+
+Both trust registries can be configured using the following environment variables:
+
+- `PORT`: The port to listen on
+- `REGISTRY_NAME`: Name identifier for the registry
+- `BASE_URL`: Base URL for service endpoints (including protocol and hostname, with optional port)
+- `REGISTRY_PATH`: Path to the registry data file
+- `REGISTRY_DATA`: Registry data as inline JSON/YAML (alternative to using a file)
+
+The verifier can be configured with:
+
+- `DEFAULT_DID_RESOLVER_URL`: URL for the DID resolver service
+
+### Important Note on BASE_URL
+
+The `BASE_URL` value is used directly for creating DIDs and service endpoints. In Docker Compose, the `BASE_URL` should include the container name and port (e.g., `http://ayra:8082`). This allows containers to properly communicate with each other within the Docker network.
