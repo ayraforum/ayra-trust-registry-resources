@@ -20,7 +20,7 @@ var ecdsaPrivateKey *ecdsa.PrivateKey
 
 func init() {
 	// Generate an ephemeral ECDSA P-256 private key on startup.
-	// In production, you’d likely load this key from a secure store or file.
+	// In production, you'd likely load this key from a secure store or file.
 	var err error
 	ecdsaPrivateKey, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
@@ -198,9 +198,49 @@ func (impl *TRQPHandler) CheckAuthorizationStatus(
 }
 
 func (impl *TRQPHandler) GetTrustRegistryMetadata(w http.ResponseWriter, r *http.Request, params trqp.GetTrustRegistryMetadataParams) {
-	resp := trqp.TrustRegistryMetadata{
-		Name: impl.Registry.Metadata.Name,
+	// Define extended metadata that includes ecosystem and trust registry DIDs
+	type ExtendedMetadata struct {
+		trqp.TrustRegistryMetadata
+		EcosystemDID     string `json:"ecosystem_did,omitempty"`
+		TrustRegistryDID string `json:"trust_registry_did,omitempty"`
 	}
+
+	// Get the ecosystem DID from query parameters, if provided
+	var ecosystemDID string
+	if params.EgfDid != nil && *params.EgfDid != "" {
+		ecosystemDID = *params.EgfDid
+
+		// Verify that the ecosystem exists
+		_, err := impl.Registry.GetEcosystemByDID(ecosystemDID)
+		if err != nil {
+			writeError(w, http.StatusNotFound, "Ecosystem not found", err.Error())
+			return
+		}
+	} else {
+		// If no ecosystem DID was provided, use the first one in the registry if available
+		if len(impl.Registry.Ecosystems) > 0 {
+			ecosystemDID = impl.Registry.Ecosystems[0].Metadata.DID
+		}
+	}
+
+	// Create the response with additional fields
+	resp := ExtendedMetadata{
+		TrustRegistryMetadata: trqp.TrustRegistryMetadata{
+			Name:          impl.Registry.Metadata.Name,
+			Id:            impl.Registry.Metadata.Identifier,
+			Description:   impl.Registry.Metadata.Description,
+			DefaultEgfDid: &ecosystemDID,
+		},
+		EcosystemDID:     ecosystemDID,
+		TrustRegistryDID: impl.Registry.Metadata.Identifier,
+	}
+
+	// Add controllers if available
+	if ecosystemDID != "" {
+		controllers := []string{ecosystemDID}
+		resp.Controllers = controllers
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }

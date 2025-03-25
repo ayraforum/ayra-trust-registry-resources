@@ -6,6 +6,56 @@ import streamlit as st
 from datetime import datetime, timezone
 from verify_flow import ecosystem_recognition_query, authorization_query
 from uuid import uuid4
+import json
+
+
+def display_error(error_response):
+    """
+    Displays detailed error information in a user-friendly format.
+    """
+    st.error(f"Error: {error_response.get('error', 'Unknown error occurred')}")
+    
+    # Display resolution steps if available
+    resolution_steps = error_response.get("resolution_steps", [])
+    if resolution_steps:
+        st.subheader("Suggested Fixes")
+        for step in resolution_steps:
+            st.markdown(f"- {step}")
+    
+    # Display technical details
+    st.subheader("Technical Details")
+    details = error_response.get("details", {})
+    
+    # Display key request information
+    if "endpoint_url" in details:
+        st.markdown(f"**Endpoint URL**: `{details['endpoint_url']}`")
+    
+    if "query_params" in details:
+        st.markdown("**Query Parameters**:")
+        st.code(json.dumps(details["query_params"], indent=2))
+        
+    # Display response information
+    if "response_status" in details:
+        st.markdown(f"**Response Status Code**: {details['response_status']}")
+        
+    if "response_json" in details:
+        st.markdown("**Response Body**:")
+        st.json(details["response_json"])
+    elif "response_text" in details:
+        st.markdown("**Response Body**:")
+        st.code(details["response_text"])
+        
+    # Show DID resolution information if available
+    if "egf_did_doc" in details:
+        st.markdown("**EGF DID Document**:")
+        st.code(json.dumps(details["egf_did_doc"], indent=2), language="json")
+            
+    if "tr_did" in details:
+        st.markdown(f"**Trust Registry DID**: `{details['tr_did']}`")
+        
+    if "tr_did_doc" in details:
+        st.markdown("**Trust Registry DID Document**:")
+        st.code(json.dumps(details["tr_did_doc"], indent=2), language="json")
 
 
 def main():
@@ -21,7 +71,7 @@ def main():
     resolver_url = st.sidebar.text_input(
         "DID Resolver URL",
         value="https://dev.uniresolver.io/1.0/identifiers/",
-        help="Specify a custom DID Resolver endpoint. Defaults to https://did-resolver.example.com/resolve/",
+        help="Specify a custom DID Resolver endpoint. Defaults to https://dev.uniresolver.io/1.0/identifiers/",
     )
 
     st.sidebar.markdown("---")
@@ -57,19 +107,21 @@ def main():
                 st.error("Please provide both Ecosystem ID.")
             else:
                 with st.spinner("Performing Ecosystem Recognition Query..."):
-                    try:
-                        result = ecosystem_recognition_query(
-                            egf_did=egf_did_recognition,
-                            ecosystem_id=ecosystem_id,
-                            time=time_recognition,
-                            nonce=str(uuid4()),
-                            scope=scope,
-                            resolver_url=resolver_url,
-                        )
+                    result = ecosystem_recognition_query(
+                        egf_did=egf_did_recognition,
+                        ecosystem_id=ecosystem_id,
+                        time=time_recognition,
+                        nonce=str(uuid4()),
+                        scope=scope,
+                        resolver_url=resolver_url,
+                    )
+                    
+                    # Check if result is an error
+                    if result.get("status") == "failed":
+                        display_error(result)
+                    else:
                         st.success("Ecosystem Recognition Query Successful!")
                         st.json(result)
-                    except Exception as e:
-                        st.error(f"Error: {str(e)}")
 
     with tabs[1]:
         st.header("Authorization Query")
@@ -99,19 +151,21 @@ def main():
                 )
             else:
                 with st.spinner("Performing Authorization Query..."):
-                    try:
-                        result = authorization_query(
-                            egf_did=egf_did_authorization,
-                            entity_id=entity_id,
-                            authorization_id=entity_auth_id,
-                            time=time_authorization,
-                            resolver_url=resolver_url,
-                            nonce=str(uuid4()),
-                        )
+                    result = authorization_query(
+                        egf_did=egf_did_authorization,
+                        entity_id=entity_id,
+                        authorization_id=entity_auth_id,
+                        time=time_authorization,
+                        resolver_url=resolver_url,
+                        nonce=str(uuid4()),
+                    )
+                    
+                    # Check if result is an error
+                    if result.get("status") == "failed":
+                        display_error(result)
+                    else:
                         st.success("Authorization Query Successful!")
                         st.json(result)
-                    except Exception as e:
-                        st.error(f"Error: {str(e)}")
 
 
 if __name__ == "__main__":

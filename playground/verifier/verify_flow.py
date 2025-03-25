@@ -61,24 +61,47 @@ def resolve_did(did, resolver_url):
         response = requests.get(resolver_endpoint)
         # response.raise_for_status()
         did_document = response.json()
+        if "didDocument" not in did_document:
+            error_msg = did_document.get("error", "Unknown error resolving DID")
+            print(f"Error resolving DID {did}: {error_msg}", file=sys.stderr)
+            raise Exception(f"DID resolution failed: {error_msg}")
+        
         ret = did_document.get("didDocument", None)
         return ret
     except requests.exceptions.RequestException as e:
         print(f"Error resolving DID {did}: {e}", file=sys.stderr)
-        return None
+        raise Exception(f"Network error resolving DID: {str(e)}")
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON response when resolving DID {did}: {e}", file=sys.stderr)
+        raise Exception(f"Invalid response format when resolving DID: {str(e)}")
 
 
 def get_service_endpoint(did_document, service_type):
     """
     Extracts the service endpoint URL from the DID Document based on service type.
     """
+    if not did_document:
+        raise Exception("DID document is empty or invalid")
+        
     services = did_document.get("service", [])
+    if not services:
+        raise Exception(f"No services found in DID document")
+        
     for service in services:
         if service.get("type") == service_type:
             print(f"Found service type '{service_type}' in DID Document.")
-            return service.get("serviceEndpoint").get("uri")
+            
+            # Handle different service endpoint formats
+            service_endpoint = service.get("serviceEndpoint")
+            if isinstance(service_endpoint, dict) and "uri" in service_endpoint:
+                return service_endpoint.get("uri")
+            elif isinstance(service_endpoint, str):
+                return service_endpoint
+            else:
+                raise Exception(f"Invalid service endpoint format: {service_endpoint}")
+                
     print(f"Service type '{service_type}' not found in DID Document.", file=sys.stderr)
-    return None
+    raise Exception(f"Service type '{service_type}' not found in DID document")
 
 
 def format_time(time_str=None):
@@ -109,57 +132,80 @@ def ecosystem_recognition_query(
     the HTTP endpoint and making the query.
     """
     print("\n--- Ecosystem Recognition Query ---")
-
-    formatted_time = format_time(time)
-    # Step 1: Resolve the EGF DID to get the EGF DID Document
-    did_doc = resolve_did(egf_did, resolver_url)
-    if not did_doc:
-        print("Failed to resolve EGF DID.", file=sys.stderr)
-        raise Exception("Failed to resolve EGF DID.")
-
-    # Step 2: Extract the TR DID from the EGF DID Document (service endpoint)
-    tr_did = get_service_endpoint(did_doc, "TRQP")
-    if not tr_did:
-        print("No TR DID found in EGF DID Document.", file=sys.stderr)
-        raise Exception("No TR DID found in EGF DID Document.")
-
-    # Step 3: Resolve the TR DID to get the HTTP endpoint
-    print(f"Resolving TR DID: {tr_did}")
-    tr_did_doc = resolve_did(tr_did, resolver_url)
-    if not tr_did_doc:
-        print(f"Failed to resolve TR DID: {tr_did}", file=sys.stderr)
-        raise Exception(f"Failed to resolve TR DID: {tr_did}")
-
-    # Step 4: Extract the HTTP endpoint from the TR DID Document
-    tr_endpoint = get_service_endpoint(tr_did_doc, "TRQP")
-    if not tr_endpoint:
-        print(
-            "No HTTP endpoint found in TR DID Document under 'TRQP' service.",
-            file=sys.stderr,
-        )
-        raise Exception(
-            "No HTTP endpoint found in TR DID Document under 'TRQP' service."
-        )
-
-    # Step 5: Construct the URL for the ecosystem recognition query
-    endpoint_url = urljoin(tr_endpoint, f"/ecosystems/{ecosystem_id}/recognition")
-
-    # Prepare query parameters
-    params = {"egf_did": egf_did, "time": formatted_time}
-
+    
+    error_details = {}
+    
     try:
-        print("Making recognition query")
+        formatted_time = format_time(time)
+        
+        # Step 1: Resolve the EGF DID to get the EGF DID Document
+        print("Resolving EGF DID:", egf_did)
+        did_doc = resolve_did(egf_did, resolver_url)
+        if not did_doc:
+            raise Exception("Failed to resolve EGF DID.")
+        error_details["egf_did_doc"] = did_doc
+            
+        # Step 2: Extract the TR DID from the EGF DID Document (service endpoint)
+        tr_did = get_service_endpoint(did_doc, "TRQP")
+        if not tr_did:
+            raise Exception("No TR DID found in EGF DID Document.")
+        error_details["tr_did"] = tr_did
+            
+        # Step 3: Resolve the TR DID to get the HTTP endpoint
+        print(f"Resolving TR DID: {tr_did}")
+        tr_did_doc = resolve_did(tr_did, resolver_url)
+        if not tr_did_doc:
+            raise Exception(f"Failed to resolve TR DID: {tr_did}")
+        error_details["tr_did_doc"] = tr_did_doc
+            
+        # Step 4: Extract the HTTP endpoint from the TR DID Document
+        tr_endpoint = get_service_endpoint(tr_did_doc, "TRQP")
+        if not tr_endpoint:
+            raise Exception("No HTTP endpoint found in TR DID Document under 'TRQP' service.")
+        error_details["tr_endpoint"] = tr_endpoint
+            
+        # Step 5: Construct the URL for the ecosystem recognition query
+        endpoint_url = urljoin(tr_endpoint, f"/ecosystems/{ecosystem_id}/recognition")
+        error_details["endpoint_url"] = endpoint_url
+        
+        # Prepare query parameters
+        params = {"egf_did": egf_did, "time": formatted_time}
+        error_details["query_params"] = params
+        
         # Step 6: Send GET request to the constructed endpoint
+        print("Making recognition query to:", endpoint_url)
         response = requests.get(endpoint_url, params=params)
-        print("Done making recognition query", response)
+        error_details["response_status"] = response.status_code
+        error_details["response_text"] = response.text
+        
+        try:
+            error_details["response_json"] = response.json()
+        except:
+            pass
+            
         response.raise_for_status()
-        print("Ecosystem Recognition Query Response:")
-
+        
         resp = response.json()
+        print("Ecosystem Recognition Query Response:")
         print(json.dumps(resp, indent=2))
         return resp
-    except requests.exceptions.RequestException as e:
+            
+    except Exception as e:
         print(f"Error performing Ecosystem Recognition Query: {e}", file=sys.stderr)
+        error_message = str(e)
+        
+        # Enhance the error message with relevant details
+        return {
+            "error": error_message,
+            "status": "failed",
+            "details": error_details,
+            "resolution_steps": [
+                "Check that the EGF DID is correct and resolves properly",
+                "Verify that the Trust Registry DID exists in the EGF DID document as a TRQP service",
+                "Confirm the Trust Registry service is running and accessible",
+                "Ensure the ecosystem ID is valid and recognized by the Trust Registry"
+            ]
+        }
 
 
 def authorization_query(
@@ -170,61 +216,85 @@ def authorization_query(
     then resolving the TR DID to get the HTTP endpoint for authorization.
     """
     print("\n--- Authorization Query ---")
-    formatted_time = format_time(time)
-
-    # Step 1: Resolve the EGF DID to get the EGF DID Document
-    did_doc = resolve_did(egf_did, resolver_url)
-    if not did_doc:
-        print("Failed to resolve EGF DID.", file=sys.stderr)
-        raise Exception("Failed to resolve EGF DID.")
-
-    # Step 2: Extract the TR DID from the EGF DID Document (service endpoint)
-    tr_did = get_service_endpoint(did_doc, "TRQP")
-    if not tr_did:
-        print("No TR DID found in EGF DID Document.", file=sys.stderr)
-        raise Exception("No TR DID found in EGF DID Document.")
-
-    # Step 3: Resolve the TR DID to get the HTTP endpoint
-    print(f"Resolving TR DID: {tr_did}")
-    tr_did_doc = resolve_did(tr_did, resolver_url)
-    if not tr_did_doc:
-        print(f"Failed to resolve TR DID: {tr_did}", file=sys.stderr)
-        raise Exception(f"Failed to resolve TR DID: {tr_did}")
-
-    # Step 4: Extract the HTTP endpoint from the TR DID Document
-    tr_endpoint = get_service_endpoint(tr_did_doc, "TRQP")
-    if not tr_endpoint:
-        print(
-            "No HTTP endpoint found in TR DID Document under 'TRQP' service.",
-            file=sys.stderr,
-        )
-        raise Exception(
-            "No HTTP endpoint found in TR DID Document under 'TRQP' service."
-        )
-
-    # Step 5: Construct the URL for the authorization query
-    endpoint_url = urljoin(tr_endpoint, f"/entities/{entity_id}/authorization")
-
-    # Prepare query parameters
-    params = {
-        "authorization_id": authorization_id,
-        "ecosystem_did": egf_did,
-        "time": formatted_time,
-        "all": "true",  # Assuming "true" by default to return list of authorizations
-    }
-
+    
+    error_details = {}
+    
     try:
+        formatted_time = format_time(time)
+        
+        # Step 1: Resolve the EGF DID to get the EGF DID Document
+        print("Resolving EGF DID:", egf_did)
+        did_doc = resolve_did(egf_did, resolver_url)
+        if not did_doc:
+            raise Exception("Failed to resolve EGF DID.")
+        error_details["egf_did_doc"] = did_doc
+            
+        # Step 2: Extract the TR DID from the EGF DID Document (service endpoint)
+        tr_did = get_service_endpoint(did_doc, "TRQP")
+        if not tr_did:
+            raise Exception("No TR DID found in EGF DID Document.")
+        error_details["tr_did"] = tr_did
+            
+        # Step 3: Resolve the TR DID to get the HTTP endpoint
+        print(f"Resolving TR DID: {tr_did}")
+        tr_did_doc = resolve_did(tr_did, resolver_url)
+        if not tr_did_doc:
+            raise Exception(f"Failed to resolve TR DID: {tr_did}")
+        error_details["tr_did_doc"] = tr_did_doc
+            
+        # Step 4: Extract the HTTP endpoint from the TR DID Document
+        tr_endpoint = get_service_endpoint(tr_did_doc, "TRQP")
+        if not tr_endpoint:
+            raise Exception("No HTTP endpoint found in TR DID Document under 'TRQP' service.")
+        error_details["tr_endpoint"] = tr_endpoint
+            
+        # Step 5: Construct the URL for the authorization query
+        endpoint_url = urljoin(tr_endpoint, f"/entities/{entity_id}/authorization")
+        error_details["endpoint_url"] = endpoint_url
+        
+        # Prepare query parameters
+        params = {
+            "authorization_id": authorization_id,
+            "ecosystem_did": egf_did,
+            "time": formatted_time,
+            "all": "true",  # Assuming "true" by default to return list of authorizations
+        }
+        error_details["query_params"] = params
+        
         # Step 6: Send GET request to the constructed endpoint
+        print("Making authorization query to:", endpoint_url)
         response = requests.get(endpoint_url, params=params)
+        error_details["response_status"] = response.status_code
+        error_details["response_text"] = response.text
+        
+        try:
+            error_details["response_json"] = response.json()
+        except:
+            pass
+            
         response.raise_for_status()
-        print("Authorization Query Response:")
-
+        
         resp = response.json()
+        print("Authorization Query Response:")
         print(json.dumps(resp, indent=2))
         return resp
-    except requests.exceptions.RequestException as e:
+            
+    except Exception as e:
         print(f"Error performing Authorization Query: {e}", file=sys.stderr)
-        return None
+        error_message = str(e)
+        
+        # Enhance the error message with relevant details
+        return {
+            "error": error_message,
+            "status": "failed",
+            "details": error_details,
+            "resolution_steps": [
+                "Check that the EGF DID is correct and resolves properly",
+                "Verify that the Trust Registry DID exists in the EGF DID document as a TRQP service",
+                "Confirm the entity ID is valid and exists in the Trust Registry",
+                "Ensure the authorization ID is correct for the specified entity"
+            ]
+        }
 
 
 def parse_arguments():
