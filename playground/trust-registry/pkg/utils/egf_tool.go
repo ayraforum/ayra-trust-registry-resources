@@ -119,6 +119,14 @@ func abbreviateService(obj interface{}) interface{} {
 					}
 				}
 			}
+			// Special handling for serviceEndpoint - if it's a ServiceProfile, extract just the URI
+			if k == "serviceEndpoint" {
+				if serviceProfile, ok := v.(map[string]interface{}); ok {
+					if uri, exists := serviceProfile["uri"]; exists {
+						v = uri
+					}
+				}
+			}
 			newMap[abbrKey] = abbreviateService(v)
 		}
 		return newMap
@@ -129,6 +137,17 @@ func abbreviateService(obj interface{}) interface{} {
 		}
 		return newArr
 	default:
+		// Handle struct types by converting to map first
+		if val != nil {
+			// Try to marshal and unmarshal to convert struct to map
+			data, err := json.Marshal(val)
+			if err == nil {
+				var mapVal map[string]interface{}
+				if json.Unmarshal(data, &mapVal) == nil {
+					return abbreviateService(mapVal)
+				}
+			}
+		}
 		return val
 	}
 }

@@ -189,11 +189,16 @@ func TestHandlerRecognizeEcosystem_Success(t *testing.T) {
 
 	handler.RecognizeEcosystem(rec, req, reqParams)
 
-	assert.Equal(t, http.StatusOK, rec.Code)
-	var resp admin.RecognizeEcosystemResponse
-	err = json.Unmarshal(rec.Body.Bytes(), &resp)
-	assert.NoError(t, err)
-	assert.NotNil(t, resp.Message)
+	if rec.Code == http.StatusOK {
+		var resp admin.RecognizeEcosystemResponse
+		err = json.Unmarshal(rec.Body.Bytes(), &resp)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp.Message)
+	} else {
+		var errResp map[string]string
+		_ = json.Unmarshal(rec.Body.Bytes(), &errResp)
+		t.Fatalf("Expected 200 OK, got %d: %v", rec.Code, errResp)
+	}
 
 	// Verify that the ecosystem now has one recognition entry.
 	updatedEco, err := svc.GetEcosystem("did:example:123")
@@ -201,15 +206,16 @@ func TestHandlerRecognizeEcosystem_Success(t *testing.T) {
 	assert.Len(t, updatedEco.RecognitionEntries, 1)
 
 	t.Run("recognize ecosystem no scope", func(t *testing.T) {
-
 		reqParams := admin.RecognizeEcosystemParams{}
 		req, _ := http.NewRequest("POST", "/ecosystems/recognitions", nil)
 		rec := httptest.NewRecorder()
 
 		handler.RecognizeEcosystem(rec, req, reqParams)
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		var errResp map[string]string
+		_ = json.Unmarshal(rec.Body.Bytes(), &errResp)
+		assert.Contains(t, errResp["error"], "Missing required query parameter")
 	})
-
 }
 
 func TestHandlerRecognizeEcosystem_MissingDID(t *testing.T) {
@@ -250,11 +256,16 @@ func TestHandlerAuthorizeEntry_Success(t *testing.T) {
 	// For AuthorizeEntry, the handler extracts parameters from the query.
 	handler.AuthorizeEntry(rec, req, admin.AuthorizeEntryParams{})
 
-	assert.Equal(t, http.StatusOK, rec.Code)
-	var authResp admin.AuthorizeEntryResponse
-	err = json.Unmarshal(rec.Body.Bytes(), &authResp)
-	assert.NoError(t, err)
-	assert.NotNil(t, authResp.Message)
+	if rec.Code == http.StatusOK {
+		var authResp admin.AuthorizeEntryResponse
+		err = json.Unmarshal(rec.Body.Bytes(), &authResp)
+		assert.NoError(t, err)
+		assert.NotNil(t, authResp.Message)
+	} else {
+		var errResp map[string]string
+		_ = json.Unmarshal(rec.Body.Bytes(), &errResp)
+		t.Fatalf("Expected 200 OK, got %d: %v", rec.Code, errResp)
+	}
 
 	// Verify that the ecosystem now has one authorization entry.
 	updatedEco, err := svc.GetEcosystem("did:example:123")

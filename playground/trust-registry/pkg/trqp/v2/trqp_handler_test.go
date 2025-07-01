@@ -22,16 +22,30 @@ func generateTestPrivateKey() *ecdsa.PrivateKey {
 // Mock Trust Registry
 func setupMockRegistry() *utils.TrustRegistry {
 	return &utils.TrustRegistry{
+		Metadata: utils.Metadata{
+			Identifier: "test-trust-registry",
+			Name:       "Test Trust Registry",
+			Description: "A test trust registry for unit tests",
+		},
 		Ecosystems: []utils.Ecosystem{
 			{
 				Metadata: utils.EcosystemMetadata{
 					DID:    "did:example:123",
 					Status: utils.Status{Active: true},
 				},
+				RecognitionEntries: []utils.RecognitionEntry{
+					{
+						DID:    "did:example:123",
+						Scope:  "test-scope",
+						Status: utils.Status{Active: true},
+					},
+				},
 				AuthorizationEntries: []utils.AuthorizationEntry{
 					{
-						Authorization: "auth-1",
-						Status:        utils.Status{Active: true},
+						ID:             "auth-1",
+						DID:            "entity-1",
+						Authorization:  "auth-1",
+						Status:         utils.Status{Active: true},
 					},
 				},
 			},
@@ -45,23 +59,21 @@ func TestCheckEcosystemRecognition_Success(t *testing.T) {
 	req := httptest.NewRequest("GET", "/ecosystem-recognition", nil)
 	w := httptest.NewRecorder()
 
-	var nonce = "random-nonce"
-
 	params := trqp.CheckEcosystemRecognitionParams{
-		Nonce: &nonce,
+		EgfDid: "did:example:123",
 	}
 
-	handler.CheckEcosystemRecognition(w, req, "did:example:123", "did:example:123", params)
+	handler.CheckEcosystemRecognition(w, req, "did:example:123", params)
 
 	resp := w.Result()
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	var responseJWS trqp.RecognitionResponseJWS
-	err := json.NewDecoder(resp.Body).Decode(&responseJWS)
+	var response trqp.RecognitionResponse
+	err := json.NewDecoder(resp.Body).Decode(&response)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, responseJWS.Jws)
+	assert.NotEmpty(t, response.Jws)
 }
 
 func TestCheckEcosystemRecognition_NotFound(t *testing.T) {
@@ -70,12 +82,11 @@ func TestCheckEcosystemRecognition_NotFound(t *testing.T) {
 	req := httptest.NewRequest("GET", "/ecosystem-recognition", nil)
 	w := httptest.NewRecorder()
 
-	var nonce = "random-nonce"
 	params := trqp.CheckEcosystemRecognitionParams{
-		Nonce: &nonce,
+		EgfDid: "did:example:999",
 	}
 
-	handler.CheckEcosystemRecognition(w, req, "did:example:999", "did:example:999", params)
+	handler.CheckEcosystemRecognition(w, req, "did:example:999", params)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -90,20 +101,22 @@ func TestCheckAuthorizationStatus_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	params := trqp.CheckAuthorizationStatusParams{
-		Nonce: "random-nonce",
+		AuthorizationId: "auth-1",
+		EcosystemDid:    "did:example:123",
+		All:             false,
 	}
 
-	handler.CheckAuthorizationStatus(w, req, "entity-1", "auth-1", "did:example:123", params)
+	handler.CheckAuthorizationStatus(w, req, "entity-1", params)
 
 	resp := w.Result()
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	var responseJWS trqp.AuthorizationResponseJWS
-	err := json.NewDecoder(resp.Body).Decode(&responseJWS)
+	var response trqp.AuthorizationResponse
+	err := json.NewDecoder(resp.Body).Decode(&response)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, responseJWS.Jws)
+	assert.NotEmpty(t, response.Jws)
 }
 
 func TestCheckAuthorizationStatus_NotFound(t *testing.T) {
@@ -113,10 +126,12 @@ func TestCheckAuthorizationStatus_NotFound(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	params := trqp.CheckAuthorizationStatusParams{
-		Nonce: "random-nonce",
+		AuthorizationId: "auth-999",
+		EcosystemDid:    "did:example:123",
+		All:             false,
 	}
 
-	handler.CheckAuthorizationStatus(w, req, "entity-1", "auth-999", "did:example:123", params)
+	handler.CheckAuthorizationStatus(w, req, "entity-1", params)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -130,15 +145,17 @@ func TestGetTrustRegistryMetadata_Success(t *testing.T) {
 	req := httptest.NewRequest("GET", "/trust-registry-metadata", nil)
 	w := httptest.NewRecorder()
 
-	handler.GetTrustRegistryMetadata(w, req)
+	params := trqp.GetTrustRegistryMetadataParams{}
+
+	handler.GetTrustRegistryMetadata(w, req, params)
 
 	resp := w.Result()
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	var responseJWS trqp.TrustRegistryMetadataJWS
-	err := json.NewDecoder(resp.Body).Decode(&responseJWS)
+	var response trqp.TrustRegistryMetadata
+	err := json.NewDecoder(resp.Body).Decode(&response)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, responseJWS.Jws)
+	assert.NotEmpty(t, response.Id)
 }

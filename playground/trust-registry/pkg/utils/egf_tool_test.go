@@ -34,7 +34,7 @@ func TestGenerateDidPeer2_Success(t *testing.T) {
 	// Check if the DID contains expected sections
 	assert.Contains(t, did, ".V", "Should contain verification key")
 	assert.Contains(t, did, ".E", "Should contain encryption key")
-	assert.Contains(t, ".S", did, "Should contain service section")
+	assert.Contains(t, did, ".S", "Should contain service section")
 }
 
 // Test DID Resolution Success

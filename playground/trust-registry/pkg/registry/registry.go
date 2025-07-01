@@ -55,7 +55,7 @@ func (svc *TrustRegistryService) RecognizeEcosystem(
 	}
 
 	// Look up the ecosystem by DID
-	eco, err := svc.Registry.GetEcosystemByDID(req.Egf)
+	eco, err := svc.Registry.GetEcosystemByDID(req.Did)
 	if err != nil {
 		return admin.RecognizeEcosystemResponse{},
 			fmt.Errorf("ecosystem not found: %w", err)
@@ -100,17 +100,17 @@ func (svc *TrustRegistryService) AuthorizeEntry(
 			fmt.Errorf("ecosystem DID is required in query param 'did'")
 	}
 
-	// Locate the ecosystem by DID
-	eco, err := svc.Registry.GetEcosystemByDID(req.Egf)
-	if err != nil {
-		return admin.AuthorizeEntryResponse{},
-			fmt.Errorf("ecosystem not found: %w", err)
-	}
-
 	// Make sure we have an AuthorizationId
 	if req.AuthorizationId == "" {
 		return admin.AuthorizeEntryResponse{},
 			fmt.Errorf("authorization_id is required")
+	}
+
+	// Locate the ecosystem by DID
+	eco, err := svc.Registry.GetEcosystemByDID(req.Did)
+	if err != nil {
+		return admin.AuthorizeEntryResponse{},
+			fmt.Errorf("ecosystem not found: %w", err)
 	}
 
 	// Prepare a new authorization entry

@@ -17,15 +17,22 @@ func NewTrustRegistryHandlers(svc *TrustRegistryService) *TrustRegistryHandlers 
 	return &TrustRegistryHandlers{svc: svc}
 }
 
+// Helper to write JSON error responses
+func writeJSONError(w http.ResponseWriter, code int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	_ = json.NewEncoder(w).Encode(map[string]string{"error": message})
+}
+
 func (h *TrustRegistryHandlers) CreateEcosystem(w http.ResponseWriter, r *http.Request) {
 	var eco utils.Ecosystem
 	if err := json.NewDecoder(r.Body).Decode(&eco); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.svc.CreateEcosystem(eco); err != nil {
-		http.Error(w, err.Error(), http.StatusConflict)
+		writeJSONError(w, http.StatusConflict, err.Error())
 		return
 	}
 
@@ -37,7 +44,7 @@ func (h *TrustRegistryHandlers) CreateEcosystem(w http.ResponseWriter, r *http.R
 func (h *TrustRegistryHandlers) GetEcosystem(w http.ResponseWriter, r *http.Request, did string) {
 	eco, err := h.svc.GetEcosystem(did)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -49,18 +56,18 @@ func (h *TrustRegistryHandlers) UpdateEcosystem(w http.ResponseWriter, r *http.R
 
 	var eco utils.Ecosystem
 	if err := json.NewDecoder(r.Body).Decode(&eco); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Ensure the JSON DID matches the path param
 	if eco.Metadata.DID != did {
-		http.Error(w, "Mismatched ecosystem DID", http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, "Mismatched ecosystem DID")
 		return
 	}
 
 	if err := h.svc.UpdateEcosystem(eco); err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -71,7 +78,7 @@ func (h *TrustRegistryHandlers) UpdateEcosystem(w http.ResponseWriter, r *http.R
 func (h *TrustRegistryHandlers) RemoveEcosystem(w http.ResponseWriter, r *http.Request, did string) {
 
 	if err := h.svc.RemoveEcosystem(did); err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -82,12 +89,12 @@ func (h *TrustRegistryHandlers) RemoveEcosystem(w http.ResponseWriter, r *http.R
 func (h *TrustRegistryHandlers) RecognizeEcosystem(w http.ResponseWriter, r *http.Request, params admin.RecognizeEcosystemParams) {
 	did := params.Did
 	if did == "" {
-		http.Error(w, "Missing required query parameter: did", http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, "Missing required query parameter: did")
 		return
 	}
 	egf := params.Egf
 	if egf == "" {
-		http.Error(w, "Missing required query parameter: egf", http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, "Missing required query parameter: egf")
 		return
 	}
 
@@ -106,7 +113,7 @@ func (h *TrustRegistryHandlers) RecognizeEcosystem(w http.ResponseWriter, r *htt
 
 	resp, err := h.svc.RecognizeEcosystem(req)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -133,17 +140,17 @@ func (h *TrustRegistryHandlers) AuthorizeEntry(w http.ResponseWriter, r *http.Re
 	// Required: did, egf, authorization_id
 	did := q.Get("did")
 	if did == "" {
-		http.Error(w, "Missing required query parameter: did", http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, "Missing required query parameter: did")
 		return
 	}
 	egf := q.Get("egf")
 	if egf == "" {
-		http.Error(w, "Missing required query parameter: egf", http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, "Missing required query parameter: egf")
 		return
 	}
 	authID := q.Get("authorization_id")
 	if authID == "" {
-		http.Error(w, "Missing required query parameter: authorization_id", http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, "Missing required query parameter: authorization_id")
 		return
 	}
 
@@ -152,7 +159,7 @@ func (h *TrustRegistryHandlers) AuthorizeEntry(w http.ResponseWriter, r *http.Re
 	if activeStr := q.Get("active"); activeStr != "" {
 		parsed, err := strconv.ParseBool(activeStr)
 		if err != nil {
-			http.Error(w, "Invalid 'active' query param; must be boolean", http.StatusBadRequest)
+			writeJSONError(w, http.StatusBadRequest, "Invalid 'active' query param; must be boolean")
 			return
 		}
 		activePtr = &parsed
@@ -168,7 +175,7 @@ func (h *TrustRegistryHandlers) AuthorizeEntry(w http.ResponseWriter, r *http.Re
 
 	resp, err := h.svc.AuthorizeEntry(req)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
