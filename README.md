@@ -2,15 +2,24 @@
 
 This repository contains resources for implementers and organizations interested in connecting with the Ayra Trust Network. These resources include specifications, guides, tools, sample code, and conformance tests to help you understand and implement the requirements for interacting with the Ayra ecosystem.
 
+
+
+
 ## Normative Resources
 
+* [TRQP v2.0](https://trustoverip.github.io/tswg-trust-registry-protocol/)
 * [Swagger YAML](./swagger.yaml) - RESTful API specification describing the required endpoints for any TRQP-compliant registry in the network.
 * [Profile](./profile.md) - Ayra Authority Verification Profile required to register into the Ayra Trust Network.
+
+
 
 ## Guides
 
 * [Implementers Guide](./guides/implementers_guide.md) - Comprehensive guide for connecting to the Ayra Trust Network.
 * [Playground Guide](./playground/playground.md) - Instructions for setting up and using the testing playground environment.
+* [TRQP Alignment](./trqp/README.md) - Information about how the Ayra TRQP Profile aligns with and informs the TRQP efforts. 
+
+
 
 ## Tools
 

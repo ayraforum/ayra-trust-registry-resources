@@ -1,0 +1,39 @@
+{
+  "$id": "ayra-metadata",
+  "title": "AyraMetadata",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description",
+    "controllers"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of the Trust Registry. A DID (see DID-Core)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name of the Trust Registry."
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 4096,
+      "description": "A description of the Trust Registry."
+    },
+    "controllers": {
+      "type": "array",
+      "description": "List of unique identifiers representing the controllers of the Trust Registry.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "default_egf_did": {
+      "type": "string",
+      "description": "Default EGF, identified by DID, that will be used if none is supplied in various queries."
+    }
+  },
+  "additionalProperties": false
+}
