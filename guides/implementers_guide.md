@@ -79,7 +79,7 @@ You can develop or reuse any *internal* trust model you prefer. The only require
 
 To be a compatible Trust Registry for Ayra, your registry must support the [Ayra Authority Verification Profile](https://ayraforum.github.io/ayra-trust-registry-resources). For example, for an Authorization Query it MUST:
 
-- Handle queries for the Authorization Query (for example, `GET /entities/{entity_id}/authorization`).
+- Handle queries for the Authorization Query (for example, `POST /authorization`).
 - Return a compliant **Authorization Response**.
 
 This means your ecosystem **must** track and provide the state of who is authorized to do what, *and* publish that data via a TRQP-enabled endpoint.
@@ -88,7 +88,7 @@ This means your ecosystem **must** track and provide the state of who is authori
 sequenceDiagram
     participant Verifier
     participant TrustRegistry
-    Verifier->>TrustRegistry: GET /entities/{entity_id}/authorization?authorization_id=XYZ
+    Verifier->>TrustRegistry: POST /authorization
     TrustRegistry->>Verifier: AuthorizationResponse (authorized|not-authorized)
 ```
 
@@ -118,7 +118,7 @@ Joining the Ayra Trust Network involves:
 2. **Create Your Trust Registry DID**  
    Choose a DID method (as allowed by the Ayra TRQP Implementation Profile) and generate a DID.  
 
-   Your registry’s DID **must** include at least one **service endpoint** referencing a TRQP profile, such as `https://ayra.forum/profiles/trqp/tr/v1` (or equivalent).  
+   Your registry’s DID **must** include at least one **service endpoint** referencing a TRQP profile, such as `https://ayra.forum/profiles/trqp/tr/v2` (or equivalent).  
 
 3. (Optional) **Tools**  
    Some ecosystems may have tooling for DID creation. Make sure at least one of your DID’s service endpoints points to the TRQP service for your registry.
@@ -148,9 +148,18 @@ Below is a step-by-step process for how a verifier would make TRQP queries.
 
 2. **Query the Ayra Trust Network for Recognition**  
    Call something like:  
-   ```
-   GET /registries/{ecosystem_did}/recognition?egf_did=<ayra_egf_did>
-   ```
+
+  ```http
+  POST /recognition
+  Content-Type: application/json
+
+  {
+    "entity_id":    "{ecosystem_did}",
+    "authority_id": "{ayra_trust_network_did}",
+    "assertion_id": "{assertion-to-test}"
+  }
+  ```
+
    If `{ecosystem_did}` is recognized, the response indicates `recognized: true`.
 
 ### Resolving an Authorization Query Against an Ecosystem
@@ -186,7 +195,7 @@ sequenceDiagram
    DIDRes->>Verifier: DID Document
    Verifier->>Verifier: Extract Ayra TR endpoint
    
-   Verifier->>AyraEco: GET /ecosystems/{target_ecosystem_did}/recognition
+   Verifier->>AyraEco: POST /recognition
    AyraEco->>Verifier: RecognitionResponse (Yes/No)
    end
    
@@ -200,7 +209,7 @@ sequenceDiagram
    DIDRes->>Verifier: DID Document with endpoints
    Verifier->>Verifier: Extract authorization endpoint
    
-   Verifier->>TargetEco: GET /entities/{entity_id}/authorization
+   Verifier->>TargetEco: POST /authorization
    TargetEco->>Verifier: AuthorizationResponse (Yes/No)
    end
 ```

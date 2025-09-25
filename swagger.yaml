@@ -20,6 +20,8 @@ tags:
     description: TRQP Compliant Queries
   - name: ayra-extension
     description: Ayra™ Extensions to TRQP
+  - name: lookup
+    description: Lookup capability ()
 
 paths:
   /recognition:
@@ -152,81 +154,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
-  /entities/{entity_id}/authorization:
+  /entities/{entity_did}/authorizations:
     get:
-      summary: Check Entity Authorization Status
+      summary: List Authorizations that this Entity has
       tags:
         - ayra-extension
       description: |
-        Determines if the specified entity (`entity_id`) is authorized under the given authorization identifier (`authorization_id`)
-        within the specified governance framework (`ecosystem_did`). Optionally, returns a list of authorizations if `all` is true.
-      operationId: checkAuthorizationStatus
-      parameters:
-        - name: entity_id
-          in: path
-          required: true
-          description: Unique identifier of the entity.
-          schema:
-            type: string
-        - name: authorization_id
-          in: query
-          required: true
-          description: Authorization identifier to evaluate.
-          schema:
-            type: string
-        - name: ecosystem_did
-          in: query
-          required: true
-          description: Unique identifier of the governance framework.
-          schema:
-            type: string
-        - name: all
-          in: query
-          required: true
-          description: Whether to return a list of authorizations.
-          schema:
-            type: boolean
-        - name: time
-          in: query
-          required: false
-          description: |
-            ISO8601/RFC3339 timestamp for authorization status evaluation.
-            Defaults to the current time if omitted.
-          schema:
-            type: string
-            format: date-time
-      responses:
-        "200":
-          description: Authorization status successfully retrieved.
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/AuthorizationResponse"
-                  - type: array
-                    items:
-                      $ref: "#/components/schemas/AuthorizationResponse"
-        "404":
-          description: Entity not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-        "401":
-          description: Unauthorized request.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-
-  /ecosystem/{ecosystem_did}/recognition:
-    get:
-      summary: Check Ecosystem Recognition
-      tags:
-        - ayra-extension
-      description: |
-        Verifies if the specified ecosystem (`egf_target`) is recognized under the given governance framework (`egf_source`).
-      operationId: checkEcosystemRecognition
+        Retrieves a collection of authorizations that this entity has, according to the ecosystem queried.
+      operationId: listEcosystemRecognitions
       parameters:
         - name: ecosystem_did
           in: path
@@ -234,27 +169,23 @@ paths:
           description: Unique identifier of the ecosystem being queried.
           schema:
             type: string
-        - name: egf_did
-          in: query
-          required: true
-          # TODO: Review note on DEFAULT EGF_DID
-          description: Unique identifier of the governance framework. Defaults to single egf_did of the Trust Registry itself.
-          schema:
-            type: string
+        
         - name: time
           in: query
           required: false
-          description: RFC3339 timestamp indicating when recognition is checked. Defaults to "now" on system being queried.
+          description: RFC3339 timestamp indicating when recognition is checked.
           schema:
             type: string
             format: date-time
       responses:
         "200":
-          description: Ecosystem recognition successfully verified.
+          description: Entity authorizations retrieved successfully.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RecognitionResponse"
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuthorizationResponse"
         "401":
           description: Unauthorized request.
           content:
@@ -266,7 +197,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemDetails"
+                $ref: '#/components/schemas/ProblemDetails'
+  
+
 
   /ecosystems/{ecosystem_did}/recognitions:
     get:
@@ -391,7 +324,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
-  /egfs/{ecosystem_did}/lookups/didmethods:
+  /ecosystems/{ecosystem_did}/lookups/didmethods:
     get:
       summary: Lookup Supported DID Methods
       tags:
@@ -489,12 +422,15 @@ components:
     AuthorizationResponse:
       type: object
       properties:
+        entity_did:
+          type: string
+          description: The identifier of the subject of the authorization query.
+        ecosystem_did:
+          type: string
+          description: The id of the Ecosystem that was queried.
         egf_did:
           type: string
           description: EGF DID this authorization response relates to.
-        recognized:
-          type: boolean
-          description: Indicates whether the entity is recognized by the Trust Registry.
         authorized:
           type: boolean
           description: Specifies whether the entity is authorized under the provided authorization ID.
@@ -526,6 +462,9 @@ components:
     RecognitionResponse:
       type: object
       properties:
+        ecosystem_did:
+          type: string
+          description: The identifier of the subject of the recognition query.
         recognized:
           type: boolean
           description: Indicates whether the ecosystem ID is recognized by the Trust Registry.
