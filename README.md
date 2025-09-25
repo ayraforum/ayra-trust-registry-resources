@@ -42,3 +42,7 @@ The playground provides a working example environment with sample implementation
 
 We welcome contributions to improve these resources. Please see [CONTRIBUTING](./CONTRIBUTING) for details on how to contribute.
 
+## TRTF Key Links:
+
+- [**TRQL 2.0 Specification DRAFT Specification**](https://trustoverip.github.io/tswg-trust-registry-protocol/)
+  - [**github repo**](https://github.com/trustoverip/tswg-trust-registry-protocol/tree/main)
