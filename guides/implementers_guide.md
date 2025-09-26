@@ -178,25 +178,24 @@ Below is a step-by-step process for how a verifier would make TRQP queries.
 
 ## Standard Interaction Patterns
 
-### After Credential (Proof) Presented
+### After Credential (Proof) Presented - Ayra Cards example
 
-With an Ayra Trust Network credential, the following data (claims) MUST be present:
+With an Ayra Cards Trust Network credential, the following data (claims) MUST be present:
 
 - Ayra Specific:
-  - `ayra.cards.type`:   
   - `ayra.assurance_level`: 
   - `ayra.did`: QUESTION/DECISION - does this belong? What if it is spoofed?
+
+- Ayra Cards Specific:
+  - `ayra.cards.type`: 
   - `ayra.cards.version`: 
 
-
-
 - More General:
-  - `issued_under_assertion_id`: string of the authority that is credential was issued under. 
+  - `issued_under_assertion_id`: string of the authority that is credential was issued under. This ties the credential to the authorization that the issuer holds - which will be confirmed against the trust registries of the ecosystem and the Ayra Trust Network.
   - `issuer_did`: The DID of the issuer of the credential.
   - `ecosystem_did`: The DID of the ecosystem that the Issuer issued the credential under.
 
-![scribble of connections](imgs/scribble-connections.png)
-
+![scribble of connections](imgs/scribble-connections.png "Informal diagram of interconnectivity.")
 
 
 ### Simple Pattern
