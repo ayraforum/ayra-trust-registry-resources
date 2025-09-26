@@ -182,11 +182,11 @@ Below is a step-by-step process for how a verifier would make TRQP queries.
 
 With an Ayra Cards Trust Network credential, the following data (claims) MUST be present:
 
-- Ayra Specific:
+- Ayra Specific: these claims are specific to 
   - `ayra.assurance_level`: 
   - `ayra.did`: QUESTION/DECISION - does this belong? What if it is spoofed?
 
-- Ayra Cards Specific:
+- Ayra Cards Specific: these claims are specific to Ayra Cards implementations.
   - `ayra.cards.type`: 
   - `ayra.cards.version`: 
 
