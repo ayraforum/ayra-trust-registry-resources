@@ -36,11 +36,10 @@ To consume information from an Ayra Trust Network ecosystem you will need some m
 
 ### Optional
 
-
 * **Namespacing for Assertions** - the `assertion_id` values are, at the protocol level, opaque strings. 
   * At the implementation level they may benefit from meaning and human readability. 
 
-
+> **NOTE:** Ayra Cards has a defined namespace. 
 
 
 # Two Main Queries: Authorization and Recognition
@@ -50,7 +49,7 @@ the TRQP has two queries at its core: Authorization and Recognition
 ## Authorization Query
 
 The **Authorization** (`/authorization`) query asks 
-> "Does EntityX have AuthorizationY under EcosystemZ?"
+> **"Does EntityX have AuthorizationY under EcosystemZ?"**
 
 ## Recognition Query
 
@@ -61,8 +60,21 @@ The **Recognition** (`/recognition`) query is about linking ecosystems. This is 
 * EcosystemC acknowledges that EcosystemA has AuthorityD
   * e.g. "Japan acknowledges Canada's Education Ecosystem as authoritative for university degrees." NOTE: There are differnt assertions about authority here. This allows each ecosystem to support an assertion-by-assertion granularity.
 
+Stated in relatively plain English:
 
-> Does EcosytemA recognize EcosystemB for AuthorityC? 
+> **Does EcosytemA hold authorityB according to EcosystemC? **
+> 
+
+Now, with parameters that map to the TRQP `/recognition` endpoint:
+
+> **Does EcosytemA (`entity_id`) hold authorityB (`assertion_id`) according to EcosystemC (`authority_id`)? **
+
+
+
+
+
+
+> **SUGGESTION** use `trustregistry_id` even though we are talking to it????
 
 
 

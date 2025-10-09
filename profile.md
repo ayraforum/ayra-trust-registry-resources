@@ -504,8 +504,7 @@ paths:
       tags:
         - extensions
       description: >
-        Retrieves the supported DID Methods recognized by this trust
-        registry for the specified ecosystem governance framework.
+        Retrieves the supported DID Methods recognized by this trust registry for the specified ecosystem.
       operationId: lookupSupportedDIDMethods
       parameters:
         - name: ecosystem_did

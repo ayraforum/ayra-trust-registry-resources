@@ -760,7 +760,7 @@ components:
           type: string
           example:
             - "did:example:GlobalDriverLicenseDID"
-          description: URI of the EGF that governs the Trust Registry.
+          description: TODO: ADJUST TO DIDS???  URI of the EGF that governs the Trust Registry.
         additionalEGFURIs:
           type: array
           description: "List of URIs of Ecosystem Governance Frameworks that this Trust Registry operates under, in addition to the .primaryEGFURI"

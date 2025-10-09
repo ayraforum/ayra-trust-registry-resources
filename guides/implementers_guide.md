@@ -32,7 +32,7 @@ TRQP defines two main authority queries:
 
 The Authorization Query is the key mechanism for answering questions like:
 
-> “Does Entity X have Authorization Y, in the context of Ecosystem Governance Framework Z?”
+> “Does Entity X have Authorization Y, in Ecosystem Z?”
 
 For example, “Is issuer X authorized to issue credential Y under ecosystem Z?”  
 
@@ -69,10 +69,12 @@ You can develop or reuse any *internal* trust model you prefer. The only require
 
 #### Four Key Takeaways
 
-1. **TRQP** does *not* replace your intra-ecosystem trust framework. It **complements** it.  
-2. **TRQP** is a bridge across various frameworks and is agnostic to specific internal trust methods.  
+1. **TRQP** does *not* replace your systems of record, your operational processes, nor your governance/trust frameworks. It **complements** it by providing a simple and consistent way for external systems to query your system for only the answers you are willing to provide.
+2. **TRQP** is a bridge across various frameworks and is agnostic to specific internal trust methods.
 3. You must handle how to map your *internal* trust model to **TRQP**.  
-4. **TRQP** ultimately answers: “Does Entity X have Authorization Y, in the context of Ecosystem Governance Framework Z?”
+4. **TRQP** ultimately answers only two questions: 
+   1. Is this entity authorized? i.e. “Does Entity X have Authorization Y, in the context of EcosystemZ?”
+   2. Do you recognized this other ecosystem? i.e. "Do
 
 
 ## Core Requirements of Implementing the TRQP for the Ayra Trust Network

@@ -6,7 +6,7 @@ This directory contains a simple reference implementation of a Trust Registry th
 
 - Complete TRQP API implementation with Redoc Frontend documentation
 - Registry data stored in a simple JSON file (`data/registry.json`)
-- Support for multiple Ecosystem Governance Frameworks (EGFs)
+- TODO: **REMOVING** Support for multiple Ecosystem Governance Frameworks (EGFs)
 - Organization and Ecosystem registration
 - Sample namespacing implementation
 
