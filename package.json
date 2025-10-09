@@ -12,9 +12,16 @@
         "render": "sh prepare.sh && node -e \"require('spec-up')({ nowatch: true })\"",
         "dev": "sh prepare.sh && node -e \"require('spec-up')({ dev: false })\""
     },
-    "keywords": ["spec", "specs", "markdown", "editor", "standards"],
+    "keywords": [
+        "spec",
+        "specs",
+        "markdown",
+        "editor",
+        "standards"
+    ],
     "author": "Andor Kesselman",
     "dependencies": {
+        "@anthropic-ai/claude-agent-sdk": "^0.1.1",
         "@traptitech/markdown-it-katex": "3.3.0",
         "axios": "^1.6.3",
         "find-pkg-dir": "2.0.0",

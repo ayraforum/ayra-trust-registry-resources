@@ -18,7 +18,7 @@ This repository contains resources for implementers and organizations interested
 * [Implementers Guide](./guides/implementers_guide.md) - Comprehensive guide for connecting to the Ayra Trust Network.
 * [Playground Guide](./playground/playground.md) - Instructions for setting up and using the testing playground environment.
 * [TRQP Alignment](./trqp/README.md) - Information about how the Ayra TRQP Profile aligns with and informs the TRQP efforts. 
-
+* [Integration Playbook](./guides/integration_playbook.md) - creates an (early at time of writing) playbook/framework for systems integrators to consider as they bring new or existing systems of record online using the TRQP.
 
 
 ## Tools
