@@ -26,7 +26,7 @@ tags:
 paths:
   /recognition:
     post: 
-      summary: Queries registry for recognition, by and ecosystem, of another ecosystem.
+      summary: Queries registry for recognition, by an ecosystem, of another ecosystem.
       tags:
         - trqp-core
       requestBody:  
@@ -55,7 +55,7 @@ paths:
                 $ref: '#/components/schemas/ProblemDetails'
   /authorization:
     post: 
-      summary: Queries registry for recognition, by and ecosystem, of another ecosystem.
+      summary: Queries registry for Authorization, by an Ecosystem, of an Entity.
       tags:
         - trqp-core
       requestBody:  
@@ -199,7 +199,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
   
-
+# TODO: consider whether we want a /ecosystems/{entity_did} path for querying specifics. It may be simpler to just return a full ecosystem_entity here with a list of .recognition and other metadata. Same applies to /entities/{entity_did} which we are already doing.
 
   /ecosystems/{ecosystem_did}/recognitions:
     get:
@@ -214,12 +214,6 @@ paths:
           in: path
           required: true
           description: Unique identifier of the ecosystem being queried.
-          schema:
-            type: string
-        - name: egf_did
-          in: query
-          required: false
-          description: Optional identifier of the governance framework to filter the response. All EGFs supported by the ecosystem will be used when not provided.
           schema:
             type: string
         - name: time
@@ -250,18 +244,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
-  /ecosystems/{ecosystem_did}/lookups/assuranceLevels:
+  /lookups/assuranceLevels:
     get:
       summary: Lookup Supported Assurance Levels
       tags:
         - ayra-extension
+        - lookup
       description: |
         Retrieves the supported assurance levels for the specified ecosystem.
       operationId: lookupSupportedAssuranceLevels
       parameters:
         - name: ecosystem_did
-          in: path
-          required: true
+          in: query
+          required: false
           description: Unique identifier of the ecosystem being queried.
           schema:
             type: string
@@ -287,18 +282,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
-  /ecosystems/{ecosystem_did}/lookups/authorizations:
+  /lookups/authorizations:
     get:
       summary: Lookup Authorizations
       tags:
         - ayra-extension
+        - lookup
       description: |
         Performs an authorization lookup based on the provided ecosystem identifier. These strings can be used in TRQP queries for this ecosystem (as `assertion_id` values in the TRQP queries).
       operationId: lookupAuthorizations
       parameters:
         - name: ecosystem_did
-          in: path
-          required: true
+          in: query
+          required: false
           description: Ecosystem identifier.
           schema:
             type: string
@@ -324,18 +320,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
-  /ecosystems/{ecosystem_did}/lookups/didmethods:
+  /lookups/didMethods:
     get:
       summary: Lookup Supported DID Methods
       tags:
         - ayra-extension
+        - lookup
       description: |
         Retrieves the supported DID Methods. AYRA is opinionated here.
       operationId: lookupSupportedDIDMethods
       parameters:
         - name: ecosystem_did
-          in: path
-          required: true
+          in: query
+          required: false
           description: Unique identifier of the ecosystem being queried.
           schema:
             type: string
