@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
   title: Ayra TRQP Profile API
   version: 1.0.0
@@ -389,20 +389,20 @@ components:
 
     TrustRegistryMetadata:
       type: object
+      required:
+        - ecosystem_did
+        - description
       properties:
+        ecosystem_did:
+          type: string
+          description: Unique identifier of the Ecosystem that the Trust Registry is associated with. This is used in TRQP queries as the `ecosytem_id` value.
         trustregistry_did:
           type: string
           description: Unique identifier, as DID, of the Trust Registry. 
         egf_did:
           type: string
           description: The Primary EGF, identified by DID, for the ecosystem.
-          #TODO: review thinking on defaultEGF_DID
-        authority_did:
-          type: string
-          description: Unique identifier of the Authority that operates the Trust Registry.
-        ecosystem_did:
-          type: string
-          description: Unique identifier of the Ecosystem that the Trust Registry is associated with. This is used in TRQP queries as the `ecosytem_id` value.
+        
         description:
           type: string
           maxLength: 4096
@@ -418,12 +418,7 @@ components:
           minItems: 1
         additionalProperties:
             type: string
-      required:
-        - id
-        - description
-        - trustregistry_did
-        - ecosystem_did
-        - controllers
+
 
     AuthorizationResponse:
       type: object
@@ -459,7 +454,7 @@ components:
           type: string
           description: Signed response object as specified in [RFC 7515](https://datatracker.ietf.org/doc/html/rfc7515) from the controller of the Trust Registry.
       required:
-        - recognized
+        - entity
         - authorized
         - message
         - evaluated_at
@@ -523,23 +518,18 @@ components:
       required:
         - identifier
       description: |
-        DID Method supported by the trust registry. May include the maximum
+        DID Method supported by the trust registry. May include the maximum assurance level that this DID Method can support
       properties:
         identifier:
           type: string
-          description: >
-            as "maintained" at
-            https://w3c.github.io/did-spec-registries/#did-methods TODO: do
-            better...
+          description: |
+            as "maintained" at [W3C](https://w3c.github.io/did-spec-registries/#did-methods) 
         egf_did:
           type: string
           description: EGF DID this DID Method applies to.
         maximumAssuranceLevel:
-          description: >
-            A DID Method may, due to technical or human trust considerations be
-            limited in the assurance
-
-            level that it can provide.
+          description: |
+            A DID Method may, due to technical or human trust considerations be limited in the assurance level that it can provide.
           allOf:
             - $ref: "#/components/schemas/AssuranceLevelType"
     DIDMethodListType:
