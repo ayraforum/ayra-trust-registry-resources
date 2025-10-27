@@ -185,7 +185,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/AuthorizationResponse"
+                  $ref: "#/components/schemas/TrqpAuthorizationResponse"
         "401":
           description: Unauthorized request.
           content:
@@ -231,7 +231,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RecognitionResponse"
+                  $ref: "#/components/schemas/TrqpRecognitionResponse"
         "401":
           description: Unauthorized request.
           content:
@@ -244,6 +244,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+  
   /lookups/assuranceLevels:
     get:
       summary: Lookup Supported Assurance Levels
@@ -306,7 +307,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/AuthorizationResponse"
+                  $ref: "#/components/schemas/TrqpAuthorizationResponse"
         "404":
           description: Entity not found.
           content:
@@ -387,6 +388,200 @@ components:
           description: A URI reference that identifies the specific occurrence of the problem.
       additionalProperties: true
 
+
+    TrqpRecognitionQuery:
+      type: object
+      description: |
+        A query request to a Trust Registry that supports TRQP 2.0. 
+        Conforms with the schemas defined in TRQP 2.0. and matches the schema objects:
+        - trqp_recognition_request.jsonschema
+        Used by the following TRQP POST queries:
+        - POST /recognition
+      properties:
+        entity_id:
+          type: string
+          format: URI
+          description: |
+            Unique identifier of the TRUST REGISTRY (identified by DID) that is the subject of the query. 
+            This is the "other trust registry" in the "Does your ecosystem recognized this **other trust registry** as assertion_id?". 
+        authority_id:
+          type: string
+          format: URI
+          description: |
+            Unique identifier of the ECOSYSTEM (identified by DID) that is being queried. 
+            This is the "your ecosystem" in the "Does **your ecosystem** recognize this other trust registry as assertion_id?".
+        action: 
+          type: string
+          description: The action that the query is checking Recognition for.
+        resource: 
+          type: string
+          description: The resource that the query is is checking Recognition for.
+        context:
+          type: object
+          properties:
+            time:
+              type: string
+              format: date-time
+              description: |
+                RFC3339 timestamp indicating when recognition is checked. 
+                Defaults to "now" on system being queried if omitted.
+          additionalProperties:
+            type: string
+          description: |
+            A flexible context object that can hold arbitrary key-value pairs. 
+            - NOTE: `time` is codified as it is a standard context to be considered.
+      required:
+        - entity_id 
+        - authority_id
+        - action
+        - resource
+
+    TrqpAuthorizationQuery:
+      type: object
+      description: |
+        A query request to a Trust Registry that supports TRQP 2.0. 
+        Conforms with the schemas defined in TRQP 2.0. and matches the schema objects:
+        - trqp_authorization_request.jsonschema
+        Used by the following TRQP POST queries:
+        - POST /authorization 
+      properties:
+        entity_id:
+          type: string
+          description: |
+            Unique identifier of the TRUST REGISTRY (identified by DID) that is the subject of the query. 
+            This is the 'EntityX` in the "Does **EntityX** have AuthorityY in EcosystemZ?". 
+        authority_id:
+          type: string
+          description: |
+            Unique identifier of the ECOSYSTEM (identified by DID) that is being queried. 
+            This is the "EcosystemZ" in the "Does EntityX have AuthorityY in **EcosystemZ**?". 
+        action: 
+          type: string
+          description: The action that the query is checking Authorization for.
+        resource: 
+          type: string
+          description: The resource that the query is is checking Authorization for.
+        context:
+          type: object
+          properties:
+            time:
+              type: string
+              format: date-time
+              description: |
+                RFC3339 timestamp indicating when recognition is checked. 
+                Defaults to "now" on system being queried if omitted.
+          additionalProperties:
+            type: string
+          description: |
+            A flexible context object that can hold arbitrary key-value pairs. 
+            - NOTE: `time` is codified as it is a standard context to be considered.
+      required:
+        - entity_id 
+        - authority_id
+        - action
+        - resource
+
+    TrqpRecognitionResponse:
+      type: object
+      description: |
+        A recognition response conforming to TRQP 2.0 specification and the
+        trqp_recognition_response.jsonschema requirements.
+      properties:
+        entity_id:
+          type: string
+          description: The identifier of the subject of the recognition query.
+        authority_id:
+          type: string
+          description: The id of the Authority entity.
+        action: 
+          type: string
+          description: The action that the query is checking Recognition for.
+        resource: 
+          type: string
+          description: The resource that the query is is checking Recognition for.
+        recognized:
+          type: boolean
+          description: True if the assertion has been verified, false otherwise.
+        time_requested:
+          type: string
+          format: date-time
+          description: The server time that was used in the query.
+        time_evaluated:
+          type: string
+          format: date-time
+          description: The server time that was used in the query.
+        message:
+          type: string
+          description: Additional details attached to the response about the assertion.
+        context:
+          type: object
+          description: The context object that was supplied for the query that was evaluated.
+          properties:
+            time:
+              type: string
+              format: date-time
+              description: Time for query to use. If blank, uses current server time. RFC3339 required, using only Z (+00:00) offset.
+          additionalProperties:
+            type: string
+      required:
+        - entity_id 
+        - authority_id
+        - action
+        - resource
+        - time_evaluated
+        - recognized
+
+    TrqpAuthorizationResponse:
+      type: object
+      description: |
+        An authorization response conforming to TRQP 2.0 specification and the
+        trqp_authorization_response.jsonschema requirements.
+      properties:
+        entity_id:
+          type: string
+          description: The identifier of the subject of the authorization.
+        authority_id:
+          type: string
+          description: The id of the Authority entity.
+        action: 
+          type: string
+          description: The action that the query is checking Authorization for.
+        resource: 
+          type: string
+          description: The resource that the query is is checking Authorization for.
+        assertion_verified:
+          type: boolean
+          description: True if the assertion has been verified, false otherwise.
+        time_requested:
+          type: string
+          format: date-time
+          description: The server time that was requested (may be blank).
+        time_evaluated:
+          type: string
+          format: date-time
+          description: The server time that was used in the query.
+        message:
+          type: string
+          description: Additional details attached to the response about the assertion.
+        context:
+          type: object
+          description: The context object that was supplied for the query that was evaluated.
+          properties:
+            time:
+              type: string
+              format: date-time
+              description: Time for query to use. If blank, uses current server time. RFC3339 required, using only Z (+00:00) offset.
+          additionalProperties:
+            type: string
+      required:
+        - entity_id 
+        - authority_id
+        - action
+        - resource
+        - time_evaluated
+        - assertion_verified
+
+
     TrustRegistryMetadata:
       type: object
       required:
@@ -420,81 +615,6 @@ components:
             type: string
 
 
-    AuthorizationResponse:
-      type: object
-      properties:
-        entity_did:
-          type: string
-          description: The identifier of the subject of the authorization query.
-        ecosystem_did:
-          type: string
-          description: The id of the Ecosystem that was queried.
-        egf_did:
-          type: string
-          description: EGF DID this authorization response relates to.
-        authorized:
-          type: boolean
-          description: Specifies whether the entity is authorized under the provided authorization ID.
-        message:
-          type: string
-          description: Additional context or information regarding the authorization status.
-        evaluated_at:
-          type: string
-          format: date-time
-          description: Timestamp when the authorization status was evaluated.
-        response_time:
-          type: string
-          format: date-time
-          description: Timestamp when the response was generated.
-        expiry_time:
-          type: string
-          format: date-time
-          description: Timestamp when the authorization status expires (if applicable).
-        jws:
-          type: string
-          description: Signed response object as specified in [RFC 7515](https://datatracker.ietf.org/doc/html/rfc7515) from the controller of the Trust Registry.
-      required:
-        - entity
-        - authorized
-        - message
-        - evaluated_at
-        - response_time
-
-    RecognitionResponse:
-      type: object
-      properties:
-        ecosystem_did:
-          type: string
-          description: The identifier of the subject of the recognition query.
-        recognized:
-          type: boolean
-          description: Indicates whether the ecosystem ID is recognized by the Trust Registry.
-        message:
-          type: string
-          description: Additional information regarding the recognition status.
-        egf_did:
-          type: string
-          description: EGF DID this recognition applies to.
-        evaluated_at:
-          type: string
-          format: date-time
-          description: Timestamp when the recognition status was evaluated.
-        response_time:
-          type: string
-          format: date-time
-          description: Timestamp when the response was generated.
-        expiry_time:
-          type: string
-          format: date-time
-          description: Timestamp when the recognition status expires (if applicable).
-        jws:
-          type: string
-          description: Signed response object as specified in [RFC 7515](https://datatracker.ietf.org/doc/html/rfc7515) from the controller of the Trust Registry.
-      required:
-        - recognized
-        - message
-        - evaluated_at
-        - response_time
 
     AssuranceLevelResponse:
       type: object
@@ -562,181 +682,3 @@ components:
           example:
             - "Level of Assurance 2 - see EGF for definition, terms, obligations,liabilities, and indemnity"
 
-
-    TrqpRecognitionQuery:
-      type: object
-      description: |
-        A query request to a Trust Registry that supports TRQP 2.0. 
-        Conforms with the schemas defined in TRQP 2.0. and matches the schema objects:
-        - trqp_recognition_request.jsonschema
-        Used by the following TRQP POST queries:
-        - POST /recognition
-      properties:
-        entity_id:
-          type: string
-          description: |
-            Unique identifier of the TRUST REGISTRY (identified by DID) that is the subject of the query. 
-            This is the "other trust registry" in the "Does your ecosystem recognized this **other trust registry** as assertion_id?". 
-        authority_id:
-          type: string
-          description: |
-            Unique identifier of the ECOSYSTEM (identified by DID) that is being queried. 
-            This is the "your ecosystem" in the "Does **your ecosystem** recognize this other trust registry as assertion_id?".
-        assertion_id:
-          type: string
-          description: |
-            The assertion_id that is being tested against. 
-            This is the `assertion_id` in the "Does your ecosystem recognize this other trust registry as **assertion_id**?".
-        context:
-          type: object
-          properties:
-            time:
-              type: string
-              format: date-time
-              description: |
-                RFC3339 timestamp indicating when recognition is checked. 
-                Defaults to "now" on system being queried if omitted.
-          additionalProperties:
-            type: string
-          description: |
-            A flexible context object that can hold arbitrary key-value pairs. 
-            - NOTE: `time` is codified as it is a standard context to be considered.
-      required:
-        - entity_id
-        - authority_id
-        - assertion_id 
-
-    TrqpAuthorizationQuery:
-      type: object
-      description: |
-        A query request to a Trust Registry that supports TRQP 2.0. 
-        Conforms with the schemas defined in TRQP 2.0. and matches the schema objects:
-        - trqp_authorization_request.jsonschema
-        Used by the following TRQP POST queries:
-        - POST /authorization 
-      properties:
-        entity_id:
-          type: string
-          description: |
-            Unique identifier of the TRUST REGISTRY (identified by DID) that is the subject of the query. 
-            This is the 'EntityX` in the "Does **EntityX** have AuthorityY in EcosystemZ?". 
-        authority_id:
-          type: string
-          description: |
-            Unique identifier of the ECOSYSTEM (identified by DID) that is being queried. 
-            This is the "EcosystemZ" in the "Does EntityX have AuthorityY in **EcosystemZ**?". 
-        assertion_id:
-          type: string
-          description: |
-            The assertion_id that is being tested against. 
-            This is the `AuthorityY` in the "Does EntityX have **AuthorityY** in **EcosystemZ**?". 
-        context:
-          type: object
-          properties:
-            time:
-              type: string
-              format: date-time
-              description: |
-                RFC3339 timestamp indicating when recognition is checked. 
-                Defaults to "now" on system being queried if omitted.
-          additionalProperties:
-            type: string
-          description: |
-            A flexible context object that can hold arbitrary key-value pairs. 
-            - NOTE: `time` is codified as it is a standard context to be considered.
-      required:
-        - entity_id
-        - authority_id
-        - assertion_id 
-
-    TrqpRecognitionResponse:
-      type: object
-      description: |
-        A recognition response conforming to TRQP 2.0 specification and the
-        trqp_recognition_response.jsonschema requirements.
-      properties:
-        entity_id:
-          type: string
-          description: The identifier of the subject of the recognition query.
-        authority_id:
-          type: string
-          description: The id of the Authority entity.
-        assertion_id:
-          type: string
-          description: The identifier of the claim type being made against the entity_id.
-        recognized:
-          type: boolean
-          description: True if the assertion has been verified, false otherwise.
-        time_requested:
-          type: string
-          format: date-time
-          description: The server time that was used in the query.
-        time_evaluated:
-          type: string
-          format: date-time
-          description: The server time that was used in the query.
-        message:
-          type: string
-          description: Additional details attached to the response about the assertion.
-        context:
-          type: object
-          description: The context object that was supplied for the query that was evaluated.
-          properties:
-            time:
-              type: string
-              format: date-time
-              description: Time for query to use. If blank, uses current server time. RFC3339 required, using only Z (+00:00) offset.
-          additionalProperties:
-            type: string
-      required:
-        - entity_id
-        - assertion_id
-        - authority_id
-        - time_evaluated
-        - recognized
-
-    TrqpAuthorizationResponse:
-      type: object
-      description: |
-        An authorization response conforming to TRQP 2.0 specification and the
-        trqp_authorization_response.jsonschema requirements.
-      properties:
-        entity_id:
-          type: string
-          description: The identifier of the subject of the authorization.
-        authority_id:
-          type: string
-          description: The id of the Authority entity.
-        assertion_id:
-          type: string
-          description: The identifier of the claim type being made against the entity_id.
-        assertion_verified:
-          type: boolean
-          description: True if the assertion has been verified, false otherwise.
-        time_requested:
-          type: string
-          format: date-time
-          description: The server time that was requested (may be blank).
-        time_evaluated:
-          type: string
-          format: date-time
-          description: The server time that was used in the query.
-        message:
-          type: string
-          description: Additional details attached to the response about the assertion.
-        context:
-          type: object
-          description: The context object that was supplied for the query that was evaluated.
-          properties:
-            time:
-              type: string
-              format: date-time
-              description: Time for query to use. If blank, uses current server time. RFC3339 required, using only Z (+00:00) offset.
-          additionalProperties:
-            type: string
-      required:
-        - entity_id
-        - assertion_id
-        - authority_id
-        - time_evaluated
-        - assertion_verified
