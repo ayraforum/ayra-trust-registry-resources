@@ -307,7 +307,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/TrqpAuthorizationResponse"
+                  $ref: "#/components/schemas/Authorization"
         "404":
           description: Entity not found.
           content:
@@ -614,7 +614,20 @@ components:
         additionalProperties:
             type: string
 
-
+    Authorization:
+      type: object
+      properties:
+        action:
+          type: string
+        resource:
+          type: string
+        description: 
+          type: string
+          description: |
+            Non-normative information about the action+resource pair.
+      required:
+        - action
+        - resource
 
     AssuranceLevelResponse:
       type: object
@@ -652,10 +665,17 @@ components:
             A DID Method may, due to technical or human trust considerations be limited in the assurance level that it can provide.
           allOf:
             - $ref: "#/components/schemas/AssuranceLevelType"
+    
+    
+    
+    
     DIDMethodListType:
       type: array
       items:
         $ref: "#/components/schemas/DIDMethodType"
+    
+    
+    
     AssuranceLevelType:
       type: object
       description: >
