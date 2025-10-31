@@ -2,7 +2,11 @@
 
 This repository contains resources for implementers and organizations interested in connecting with the Ayra Trust Network. These resources include specifications, guides, tools, sample code, and conformance tests to help you understand and implement the requirements for interacting with the Ayra ecosystem.
 
+## API Browsers
 
+The following links should load a Swagger UI rendering of the TRQP and TRQP Ayra Profile:
+* [TRQP 2.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/ayraforum/ayra-trust-registry-resources/main/trqp_swagger.yaml) 
+* [TRQP 2.0 Ayra Profile](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/ayraforum/ayra-trust-registry-resources/main/trqp_ayra_profile_swagger.yaml)
 
 
 ## Normative Resources
