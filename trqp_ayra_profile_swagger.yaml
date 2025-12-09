@@ -12,8 +12,8 @@ servers:
   # TODO: consider sandbox-tr.ayra.technology for domain.
   - url: https://example-trust-registry.com
     description: Production server (example)
-  - url: https://sandbox-trust-registry.com
-    description: Sandbox server (example)
+  - url: https://sandbox-tr.ayra.technology
+    description: Sandbox server (Ayra)
 
 tags:
   - name: trqp-core
