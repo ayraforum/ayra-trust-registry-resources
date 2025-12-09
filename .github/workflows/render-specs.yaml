@@ -30,11 +30,7 @@ jobs:
           cp -r playground/trust-registry/api/* ./
 
           # Validate OpenAPI specs (using trqp.yaml or swagger.yaml as needed)
-          if [ -f trqp.yaml ]; then
-            SPEC_FILE="trqp_ayra_profile_swagger.yaml"
-          else
-            SPEC_FILE="swagger.yaml"
-          fi
+          SPEC_FILE="trqp_ayra_profile_swagger.yaml"
           swagger-cli validate $SPEC_FILE
 
           # Build Redoc documentation
