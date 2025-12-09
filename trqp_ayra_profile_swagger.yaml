@@ -12,8 +12,8 @@ servers:
   # TODO: consider sandbox-tr.ayra.technology for domain.
   - url: https://example-trust-registry.com
     description: Production server (example)
-  - url: https://sandbox-trust-registry.com
-    description: Sandbox server (example)
+  - url: https://sandbox-tr.ayra.technology
+    description: Sandbox server (Ayra)
 
 tags:
   - name: trqp-core
@@ -24,35 +24,7 @@ tags:
     description: Lookup capability ()
 
 paths:
-  /recognition:
-    post: 
-      summary: Queries registry for recognition, by an ecosystem, of another ecosystem.
-      tags:
-        - trqp-core
-      requestBody:  
-        content: 
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TrqpRecognitionQuery'
-      responses:
-        200:
-          description: Recognition query successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrqpRecognitionResponse'
-        404:
-          description: Entity not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetails'
-        401:
-          description: Unauthorized request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetails'
+  
   /authorization:
     post: 
       summary: Queries registry for Authorization, by an Ecosystem, of an Entity.
@@ -82,7 +54,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
-        
+
+  /recognition:
+    post: 
+      summary: Queries registry for recognition, by an ecosystem, of another ecosystem.
+      tags:
+        - trqp-core
+      requestBody:  
+        content: 
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrqpRecognitionQuery'
+      responses:
+        200:
+          description: Recognition query successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrqpRecognitionResponse'
+        404:
+          description: Entity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        401:
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
   /metadata:
     get:
       summary: Retrieve Trust Registry Metadata
