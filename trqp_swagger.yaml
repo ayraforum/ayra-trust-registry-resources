@@ -21,12 +21,34 @@ tags:
 
 paths:
   /recognition:
-    post: 
+    post:
       summary: Queries registry for recognition, by an ecosystem, of another ecosystem.
       tags:
         - trqp-core
-      requestBody:  
-        content: 
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            enum:
+              - application/json
+          description: Content type must be application/json
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Bearer token for authentication (conditional based on registry policy)
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Optional UUID for request tracing
+      requestBody:
+        content:
           application/json:
             schema:
               $ref: '#/components/schemas/TrqpRecognitionQuery'
@@ -37,25 +59,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrqpRecognitionResponse'
-        404:
-          description: Entity not found
+        400:
+          description: Bad request - invalid JSON or missing required fields
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         401:
-          description: Unauthorized request
+          description: Unauthorized request - invalid or missing bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        404:
+          description: Entity, authority, or assertion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        500:
+          description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
   /authorization:
-    post: 
+    post:
       summary: Queries registry for Authorization, by an Ecosystem, of an Entity.
       tags:
         - trqp-core
-      requestBody:  
-        content: 
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            enum:
+              - application/json
+          description: Content type must be application/json
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Bearer token for authentication (conditional based on registry policy)
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Optional UUID for request tracing
+      requestBody:
+        content:
           application/json:
             schema:
               $ref: '#/components/schemas/TrqpAuthorizationQuery'
@@ -66,14 +122,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrqpAuthorizationResponse'
-        404:
-          description: Entity not found
+        400:
+          description: Bad request - invalid JSON or missing required fields
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         401:
-          description: Unauthorized request
+          description: Unauthorized request - invalid or missing bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        404:
+          description: Entity, authority, or assertion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        500:
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -269,7 +337,7 @@ components:
         resource: 
           type: string
           description: The resource that the query is is checking Authorization for.
-        assertion_verified:
+        authorized:
           type: boolean
           description: True if the assertion has been verified, false otherwise.
         time_requested:
@@ -294,10 +362,10 @@ components:
           additionalProperties:
             type: string
       required:
-        - entity_id 
+        - entity_id
         - authority_id
         - action
         - resource
         - time_evaluated
-        - assertion_verified
+        - authorized
 
