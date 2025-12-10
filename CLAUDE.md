@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## TRQP Core 
+
+The Trust Registry Query Protocol specification is located at: https://trustoverip.github.io/tswg-trust-registry-protocol/ 
+
+### Maintained APIs
+
+We need TWO key APIs - which can be in one Swagger file, and use OAS "tags" to differentiate:
+
+
+* `trqp-core` - the core TRQP
+* `ayra-extensions` - endpoints that are specific to the Ayra Trust Network Profile
+
+
+
 ## Repository Overview
 
 This repository contains resources for implementing Trust Registry Query Protocol (TRQP) compliance with the Ayra Trust Network, including specifications, sample implementations, testing tools, and developer guides.
