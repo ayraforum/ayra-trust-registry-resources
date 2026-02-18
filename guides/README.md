@@ -4,17 +4,19 @@ This directory contains guides to help you implement and interact with the Ayra 
 
 ## Available Guides
 
-* [Implementers Guide](./implementers_guide.md) - A comprehensive non-normative guide to help you implement the Trust Registry Query Protocol (TRQP) for participation in the Ayra Trust Network. Covers the fundamentals of bridging your existing trust frameworks via a standardized interface.
+- [Implementers Guide](./implementers_guide.md) -- A comprehensive non-normative guide for implementing the Trust Registry Query Protocol (TRQP) v2.0 for participation in the Ayra Trust Network.
 
 ## Key Concepts Covered
 
-- TRQP basics and how it bridges across different trust frameworks
+- TRQP v2.0 basics and the PARC query model
+- Conformance checklist mapping TRQP v2.0 to Ayra requirements
 - Core requirements for implementing TRQP for the Ayra Trust Network
+- Concrete request/response examples for authorization and recognition queries
 - Process for registering your ecosystem with Ayra
 - Steps for performing authority queries as a verifier
-- Standard interaction patterns
+- Ayra extension endpoints for discovery and lookup
+- Error handling with RFC 7807 Problem Details
 - Security considerations
-- Extensions specific to the Ayra Trust Network
 
 ## Usage
 
