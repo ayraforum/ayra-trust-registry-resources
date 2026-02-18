@@ -3,10 +3,12 @@ info:
   title: Ayra TRQP Profile API
   version: 1.0.0
   description: |
-    This specification defines a RESTful TRQP profile for use in the Ayra™ Trust Network.
-    It includes endpoints for retrieving Trust Registry metadata,
-    authorization data, verifying entity authorization status,
-    and checking ecosystem recognition.
+    Combined OpenAPI specification for the Ayra Trust Network TRQP implementation.
+    Endpoints are organized by tag:
+    - **trqp-core**: TRQP v2.0 compliant endpoints (`POST /authorization`, `POST /recognition`)
+    - **ayra-extension**: Ayra-specific extension endpoints for metadata, entity lookup, ecosystem discovery, and lookups
+
+    See the [Ayra Authority Verification Profile](https://ayraforum.github.io/ayra-trust-registry-resources/) for normative requirements.
 
 servers:
   - url: https://example-trust-registry.com
@@ -286,6 +288,48 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
   
+  /ecosystems/{ecosystem_did}:
+    get:
+      summary: Retrieve Ecosystem Information
+      tags:
+        - ayra-extension
+      description: |
+        Retrieves information about a specific ecosystem, including its metadata, recognition status, and other details.
+      operationId: getEcosystemInformation
+      parameters:
+        - name: ecosystem_did
+          in: path
+          required: true
+          description: Unique identifier (DID) of the ecosystem being queried.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ecosystem information successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A JSON object containing ecosystem information.
+        "404":
+          description: Ecosystem not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "501":
+          description: Method not implemented.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
   /ecosystems/{ecosystem_did}/recognitions:
     get:
       summary: List Recognized Ecosystems
