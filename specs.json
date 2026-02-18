@@ -16,7 +16,7 @@
         },
         {
             "title": "Ayra Authority Verification Profile",
-            "spec_directory": "./",
+            "spec_directory": "./spec",
             "output_path": "./dist",
             "markdown_paths": ["profile.md"],
             "logo": "http://ayra.forum/wp-content/uploads/2025/01/ayra-nav-logo.png",
