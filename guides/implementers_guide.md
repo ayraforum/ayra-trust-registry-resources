@@ -158,7 +158,8 @@ Below is a step-by-step process for how a verifier would make TRQP queries.
   {
     "entity_id":    "{ecosystem_did}",
     "authority_id": "{ayra_trust_network_did}",
-    "assertion_id": "{assertion-to-test}"
+    "action": "{action-to-test}",
+    "resource": "{resource-to-test}"
   }
   ```
 
@@ -171,9 +172,18 @@ Below is a step-by-step process for how a verifier would make TRQP queries.
 
 2. **Query the Ecosystem’s Trust Registry**  
    Call:  
-   ```
-   POST //authorization TODO: (put JSON in)
-   ```
+```http
+  POST //authorization TODO: 
+  Content-Type: application/json
+
+  {
+    "entity_id":    "{ecosystem_did}",
+    "authority_id": "{ayra_trust_network_did}",
+    "action": "{action-to-test}",
+    "resource": "{resource-to-test}"
+  }
+```
+
    This returns whether `{entity_id}` is authorized under `authorization_id` for that particular ecosystem.
 
 ---
@@ -182,10 +192,10 @@ Below is a step-by-step process for how a verifier would make TRQP queries.
 
 ### After Credential (Proof) Presented - Ayra Cards example
 
-With an Ayra Cards Trust Network credential, the following data (claims) MUST be present:
+With an Ayra Card Trust Network credential, the following data (claims) MUST be present:
 
-- Ayra Specific: these claims are specific to 
-  - `ayra.assurance_level`: 
+- Ayra Specific: these claims are specific to
+  - `ayra.assurance_level`:
   - `ayra.did`: QUESTION/DECISION - does this belong? What if it is spoofed?
 
 - Ayra Cards Specific: these claims are specific to Ayra Cards implementations.
@@ -193,7 +203,6 @@ With an Ayra Cards Trust Network credential, the following data (claims) MUST be
   - `ayra.cards.version`: 
 
 - More General:
-  - `issued_under_assertion_id`: string of the authority that is credential was issued under. This ties the credential to the authorization that the issuer holds - which will be confirmed against the trust registries of the ecosystem and the Ayra Trust Network.
   - `issuer_did`: The DID of the issuer of the credential.
   - `ecosystem_did`: The DID of the ecosystem that the Issuer issued the credential under.
 
@@ -277,7 +286,7 @@ An authorization is a formal grant of privileges. TRQP only needs an **authoriza
 TRQP is not prescriptive about your internal model. As long as you can map `(entity_id, assertion_id, authority_id)` to a yes/no authorization state, you can use TRQP. 
 
 - `entity_id` is the DID for the entity that issued the credential
-- `assertion_id` is the thing that they have done (e.g. `ayracards:businesscard:ecosystem:issue`)
+- `action` and `resource` is about what **Action** they are authorized to take on a particular **Resource**, (e.g. action of `issue` for resource `ayracards:businesscard`)
 - `authority_id` is the DID for an ecosystem that the credential was issued under.
 
 ### What’s the Difference Between Recognition and Authorization?
