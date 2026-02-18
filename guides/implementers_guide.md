@@ -52,21 +52,19 @@ When bridging into an ecosystem, you may need adapters tailored to that ecosyste
 ```mermaid
 graph LR
   subgraph Ayra Trust Network
-    Metaregistry
-    AyraBridge[Ayra Bridge]
+    ATN_Registry[Registry of Registries] 
   end
   subgraph Your Ecosystem
     Profile[Ayra Profile]
-    Bridge[TRQP Bridge]
+    Bridge[TRQP v2.0]
     TR[Trust Registry]
     SoR[System Of Record]
   end
   Profile -->|complies with| Bridge
   Bridge -->|bridges| TR
   TR -->|serves| SoR
-  Bridge -->|authorization| V[Verifier]
-  Metaregistry --> AyraBridge
-  AyraBridge -->|recognition| V
+  Bridge -->|authorization| Verifier
+  ATN_Registry -->|recognition| Verifier
 ```
 
 You can develop or reuse any *internal* trust model you prefer. The only requirement is that you expose the necessary TRQP endpoints so that external verifiers can query your trust state.
