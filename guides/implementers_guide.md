@@ -3,7 +3,7 @@
 **State: DRAFT**
 
 ::: note
-See the [Profile](https://ayraforum.github.io/ayra-trust-registry-resources) for the Ayra Authority Verification Profile
+See the [Profile](https://ayraforum.github.io/ayra-trust-registry-resources) for the Ayra TRQP Profile
 :::
 
 This document is a *non-normative* guide to help you implement the Trust Registry Query Protocol (TRQP) for participation in the Ayra Trust Network (ATN). It is intended as a starting point for understanding how to achieve trusted, cross-ecosystem data exchange using TRQP. By following this guide, you will learn the fundamentals of bridging your existing trust frameworks via a standardized interface.
@@ -13,7 +13,7 @@ This document is a *non-normative* guide to help you implement the Trust Registr
 Before diving into implementation details, we recommend familiarizing yourself with:
 
 - [Trust Registry Query Protocol (TRQP) v2.0 Specification](https://trustoverip.github.io/tswg-trust-registry-protocol/)
-- [Ayra Authority Verification Profile](https://ayraforum.github.io/ayra-trust-registry-resources)
+- [Ayra TRQP Profile](https://ayraforum.github.io/ayra-trust-registry-resources)
 - [Introduction to Ayra](https://ayra.forum/ayra-introduction/)
 - [Ayra Technical Whitepaper](https://ayra.forum/ayra-technical-whitepaper/)
 
@@ -67,6 +67,15 @@ flowchart LR
 
 You can develop or reuse any *internal* trust model you prefer. The only requirement is that you expose the necessary TRQP endpoints so that external verifiers can query your trust state.
 
+### Key Participants
+
+| Participant | Description |
+| :---- | :---- |
+| **TRQP API Provider** | Vendors that supply a Trust Registry Query Protocol (TRQP) service on behalf of an ecosystem. |
+| **Ayra Metaregistry Operators** | The set of metaregistry operators that serve the Ayra Trust Network state by relaying recognized ecosystems. |
+| **Verifier** | The end authority verifier that is interested in verifying not only the cryptography, but the validity of the author for the set of claims. |
+| **Ecosystem** | Ecosystems leverage TR vendors to manage their authority state. Each ecosystem must have sovereignty over their authority state. |
+
 ### Key Takeaways
 
 1. **TRQP complements** your systems of record, operational processes, and governance frameworks. It provides a simple, consistent way for external systems to query your system for only the answers you are willing to provide.
@@ -102,7 +111,7 @@ The following table maps TRQP v2.0 conformance requirements to what an Ayra impl
 
 ## Core Requirements for the Ayra Trust Network
 
-To be a compatible Trust Registry for Ayra, your registry must support the [Ayra Authority Verification Profile](https://ayraforum.github.io/ayra-trust-registry-resources).
+To be a compatible Trust Registry for Ayra, your registry must support the [Ayra TRQP Profile](https://ayraforum.github.io/ayra-trust-registry-resources).
 
 Your implementation MUST:
 
@@ -217,7 +226,7 @@ Joining the Ayra Trust Network involves:
 
 1. **Prepare Your Trust Registry Keys** -- Generate cryptographic keys for your Trust Registry's DID.
 
-2. **Create Your Trust Registry DID** -- Use `did:webvh` (as required by the Ayra Profile) and generate a DID. Your registry's DID **must** include at least one **service endpoint** referencing a TRQP profile at `https://ayra.forum/profiles/trqp/tr/v1`.
+2. **Create Your Trust Registry DID** -- Use `did:webvh` (as required by the Ayra Profile) and generate a DID. Your registry's DID **must** include at least one **service endpoint** referencing a TRQP profile at `https://ayra.forum/profiles/trqp/tr/v2`.
 
 ### Creating an Identifier for Your Ecosystem
 

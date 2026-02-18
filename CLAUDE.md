@@ -55,7 +55,7 @@ Available playground services:
 
 **Specifications & Standards**
 - `swagger.yaml` - Main TRQP API specification for Ayra compliance
-- `profile.md` - Ayra Authority Verification Profile requirements
+- `spec/profile.md` - Ayra TRQP Profile requirements
 - `playground/trust-registry/api/` - API specifications (v1.yaml, v2.yaml, admin.yaml)
 
 **Sample Implementations**

@@ -4,7 +4,7 @@ This directory contains resources that track the alignment between the Ayra TRQP
 
 ## Ayra Profile Relationship to TRQP v2.0
 
-The Ayra Authority Verification Profile is a **profile** of TRQP v2.0. It:
+The Ayra TRQP Profile is a **profile** of TRQP v2.0. It:
 
 - **Requires** both `/authorization` and `/recognition` endpoints (TRQP v2.0 requires at least one). NOTE: either can return a 501 (NOT IMPLEMENTED), but both are required to conform with the Swagger/OAS specification.
 - **Constrains** identifiers to `did:webvh` (TRQP v2.0 allows any RFC 3986 URI).

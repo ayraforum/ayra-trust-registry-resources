@@ -12,7 +12,7 @@ Interactive Swagger UI rendering of the TRQP and Ayra Profile API:
 
 - [TRQP v2.0 Specification](https://trustoverip.github.io/tswg-trust-registry-protocol/) -- The Trust Registry Query Protocol specification
 - [Ayra TRQP Profile API](./trqp_ayra_profile_swagger.yaml) -- OpenAPI specification covering TRQP v2.0 core and Ayra extensions
-- [Ayra Authority Verification Profile](./spec/profile.md) -- Profile required to register into the Ayra Trust Network
+- [Ayra TRQP Profile](./spec/profile.md) -- Profile required to register into the Ayra Trust Network
 
 ## Guides
 
@@ -26,7 +26,7 @@ Interactive Swagger UI rendering of the TRQP and Ayra Profile API:
 
 ## Getting Started
 
-1. Read the [Ayra Authority Verification Profile](https://ayraforum.github.io/ayra-trust-registry-resources/) to understand the verification requirements.
+1. Read the [Ayra TRQP Profile](https://ayraforum.github.io/ayra-trust-registry-resources/) to understand the verification requirements.
 2. Read the [Implementers Guide](./guides/implementers_guide.md) to understand core concepts and how to integrate with the Ayra Trust Network.
 3. Review the [API Specifications](#api-specifications) to understand the endpoints, request/response formats, and error handling.
 

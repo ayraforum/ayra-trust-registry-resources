@@ -8,7 +8,7 @@ info:
     - **trqp-core**: TRQP v2.0 compliant endpoints (`POST /authorization`, `POST /recognition`)
     - **ayra-extension**: Ayra-specific extension endpoints for metadata, entity lookup, ecosystem discovery, and lookups
 
-    See the [Ayra Authority Verification Profile](https://ayraforum.github.io/ayra-trust-registry-resources/) for normative requirements.
+    See the [Ayra TRQP Profile](https://ayraforum.github.io/ayra-trust-registry-resources/) for normative requirements.
 
 servers:
   - url: https://example-trust-registry.com

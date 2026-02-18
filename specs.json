@@ -15,7 +15,7 @@
             "external_specs": []
         },
         {
-            "title": "Ayra Authority Verification Profile",
+            "title": "Ayra TRQP Profile",
             "spec_directory": "./spec",
             "output_path": "./dist",
             "markdown_paths": ["profile.md"],
