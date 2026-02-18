@@ -9,7 +9,6 @@ info:
     and checking ecosystem recognition.
 
 servers:
-  # TODO: consider sandbox-tr.ayra.technology for domain.
   - url: https://example-trust-registry.com
     description: Production server (example)
   - url: https://sandbox-tr.ayra.technology
@@ -21,17 +20,39 @@ tags:
   - name: ayra-extension
     description: Ayra Extensions to TRQP
   - name: lookup
-    description: Lookup capability ()
+    description: Lookup endpoints for discovery of trust parameters
 
 paths:
   
   /authorization:
-    post: 
+    post:
       summary: Queries registry for Authorization, by an Ecosystem, of an Entity.
       tags:
         - trqp-core
-      requestBody:  
-        content: 
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            enum:
+              - application/json
+          description: Content type must be application/json
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Bearer token for authentication (conditional based on registry policy)
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Optional UUID for request tracing
+      requestBody:
+        content:
           application/json:
             schema:
               $ref: '#/components/schemas/TrqpAuthorizationQuery'
@@ -42,26 +63,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrqpAuthorizationResponse'
-        404:
-          description: Entity not found
+        400:
+          description: Bad request - invalid JSON or missing required fields
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         401:
-          description: Unauthorized request
+          description: Unauthorized request - invalid or missing bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        404:
+          description: Entity, authority, action, or resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        500:
+          description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
   /recognition:
-    post: 
+    post:
       summary: Queries registry for recognition, by an ecosystem, of another ecosystem.
       tags:
         - trqp-core
-      requestBody:  
-        content: 
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            enum:
+              - application/json
+          description: Content type must be application/json
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Bearer token for authentication (conditional based on registry policy)
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Optional UUID for request tracing
+      requestBody:
+        content:
           application/json:
             schema:
               $ref: '#/components/schemas/TrqpRecognitionQuery'
@@ -72,14 +127,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrqpRecognitionResponse'
-        404:
-          description: Entity not found
+        400:
+          description: Bad request - invalid JSON or missing required fields
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         401:
-          description: Unauthorized request
+          description: Unauthorized request - invalid or missing bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        404:
+          description: Entity, authority, action, or resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        500:
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -219,8 +286,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
   
-# TODO: consider whether we want a /ecosystems/{entity_did} path for querying specifics. It may be simpler to just return a full ecosystem_entity here with a list of .recognition and other metadata. Same applies to /entities/{entity_did} which we are already doing.
-
   /ecosystems/{ecosystem_did}/recognitions:
     get:
       summary: List Recognized Ecosystems
@@ -316,7 +381,7 @@ paths:
         - ayra-extension
         - lookup
       description: |
-        Performs an authorization lookup based on the provided ecosystem identifier. These strings can be used in TRQP queries for this ecosystem (as `assertion_id` values in the TRQP queries).
+        Performs an authorization lookup based on the provided ecosystem identifier. The returned action+resource pairs can be used in TRQP authorization queries for this ecosystem.
       operationId: lookupAuthorizations
       parameters:
         - name: ecosystem_did
@@ -587,9 +652,9 @@ components:
         resource: 
           type: string
           description: The resource that the query is is checking Authorization for.
-        assertion_verified:
+        authorized:
           type: boolean
-          description: True if the assertion has been verified, false otherwise.
+          description: True if the entity is authorized, false otherwise.
         time_requested:
           type: string
           format: date-time
@@ -617,7 +682,7 @@ components:
         - action
         - resource
         - time_evaluated
-        - assertion_verified
+        - authorized
 
 
     TrustRegistryMetadata:
