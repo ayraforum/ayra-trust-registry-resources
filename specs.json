@@ -27,20 +27,6 @@
                 "repo": "ayra-trust-registry-resources"
             },
             "external_specs": []
-        },
-        {
-            "title": "Ayra Trust Network Playground",
-            "spec_directory": "./playground",
-            "output_path": "./dist/playground",
-            "markdown_paths": ["playground.md"],
-            "logo": "http://ayra.forum/wp-content/uploads/2025/01/ayra-nav-logo.png",
-            "katex": false,
-            "source": {
-                "host": "github",
-                "account": "ayraforum",
-                "repo": "ayra-trust-registry-resources"
-            },
-            "external_specs": []
         }
     ]
 }
