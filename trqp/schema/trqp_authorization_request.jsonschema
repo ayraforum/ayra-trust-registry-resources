@@ -1,24 +1,30 @@
 {
     "$id": "trqp-authorization-request",
     "title": "AuthorizationRequest",
+    "description": "A TRQP v2.0 authorization query request using the PARC model (Principal, Action, Resource, Context).",
     "type": "object",
     "required": [
         "entity_id",
-        "assertion_id",
-        "authority_id"
+        "authority_id",
+        "action",
+        "resource"
     ],
     "properties": {
         "entity_id": {
             "type": "string",
-            "description": "The identifier of the subject the assertion is made for."
+            "description": "The identifier of the entity (principal) being tested for authorization."
         },
         "authority_id": {
             "type": "string",
-            "description": "The Authority being queried."
+            "description": "The identifier of the authority (ecosystem) being queried."
         },
-        "assertion_id": {
+        "action": {
             "type": "string",
-            "description": "the assertion being queried - Does entity_id have assertion_id according to authority_id"
+            "description": "The action being checked for authorization (e.g. 'issue', 'verify')."
+        },
+        "resource": {
+            "type": "string",
+            "description": "The resource that the action applies to (e.g. 'credential:driverlicense')."
         },
         "context": {
             "type": "object",

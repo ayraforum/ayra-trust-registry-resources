@@ -1,57 +1,64 @@
 {
-  "$id": "trqp-recognition-response",
-  "title": "RecognitionResponse",
-  "type": "object",
-  "required": [
-    "entity_id",
-    "assertion_id",
-    "authority_id",
-    "time_evaluated",
-    "recognized"
-  ],
-  "properties": {
-    "entity_id": {
-      "type": "string",
-      "description": "The identifier of the subject of the authorization."
-    },
-    "authority_id": {
-      "type": "string",
-      "description": "The id of the Authority entity."
-    },
-    "assertion_id": {
-      "type": "string",
-      "description": "The identifier of the claim type being made against the entity_id."
-    },
-    "recognized": {
-      "type": "boolean",
-      "description": "True if the assertion has been verified, false otherwise."
-    },
-    "time_requested": {
-      "type": "string",
-      "format": "date-time",
-      "description": "the server time that was used in the query."
-    },
-    "time_evaluated": {
-      "type": "string",
-      "format": "date-time",
-      "description": "the server time that was used in the query."
-    },
-    "message": {
-      "type": "string",
-      "description": "additional details attached to the response about the assertion"
-    },
-    "context": {
-      "type": "object",
-      "description": "the context object that was supplied for the query that was evaluated",
-      "properties": {
-        "time": {
-          "type": "string",
-          "description": "Time for query to use. If blank, uses current server time. RFC3339 required, using only Z (+00:00) offset."
+    "$id": "trqp-recognition-response",
+    "title": "RecognitionResponse",
+    "description": "A TRQP v2.0 recognition response conforming to the PARC model.",
+    "type": "object",
+    "required": [
+        "entity_id",
+        "authority_id",
+        "action",
+        "resource",
+        "recognized",
+        "time_evaluated"
+    ],
+    "properties": {
+        "entity_id": {
+            "type": "string",
+            "description": "The identifier of the entity that was tested for recognition."
+        },
+        "authority_id": {
+            "type": "string",
+            "description": "The identifier of the authority (ecosystem) that was queried."
+        },
+        "action": {
+            "type": "string",
+            "description": "The action that was checked for recognition."
+        },
+        "resource": {
+            "type": "string",
+            "description": "The resource that the recognition applies to."
+        },
+        "recognized": {
+            "type": "boolean",
+            "description": "True if the entity is recognized for the specified action on the resource, false otherwise."
+        },
+        "time_requested": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The time that was requested for evaluation (may be absent if not specified in query)."
+        },
+        "time_evaluated": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The server time at which the recognition was evaluated. RFC3339, Z offset only."
+        },
+        "message": {
+            "type": "string",
+            "description": "Additional details about the recognition result."
+        },
+        "context": {
+            "type": "object",
+            "description": "The context object that was supplied for the query that was evaluated.",
+            "properties": {
+                "time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Time for query to use. RFC3339 required, using only Z (+00:00) offset."
+                }
+            },
+            "additionalProperties": {
+                "type": "string"
+            }
         }
-      },
-      "additionalProperties": {
-        "type": "string"
-      }
     }
-  }
 }
