@@ -9,7 +9,7 @@ The Ayra TRQP Profile is a **profile** of TRQP v2.0. It:
 - **Requires** both `/authorization` and `/recognition` endpoints (TRQP v2.0 requires at least one). NOTE: either can return a 501 (NOT IMPLEMENTED), but both are required to conform with the Swagger/OAS specification.
 - **Constrains** identifiers to `did:webvh` (TRQP v2.0 allows any RFC 3986 URI).
 - **Adds** JWS response signing (not required by TRQP core).
-- **Adds** extension endpoints for metadata, entity lookup, assurance levels, authorizations, and DID methods.
+- **Adds** extension endpoints for metadata, entity lookup, assurance levels, authorizations, and DID methods. The Ayra metadata extension is intentionally profile-owned because TRQP v2.0 core does not prescribe a metadata endpoint.
 
 ## Schemas
 
