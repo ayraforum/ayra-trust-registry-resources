@@ -4,9 +4,16 @@ This directory contains tools to help you create and manage DIDs for the Ayra Tr
 
 ## Available Tools
 
-### DID Peer 2 Generator & Resolver
+### DID Peer 2 Local Demo Generator & Resolver
 
-The primary tool in this directory is a generator and resolver for `DID:peer:2` identifiers with support for Trust Registry and Ecosystem DIDs. It uses Streamlit for the web interface and cryptographic libraries to generate DID keys and services.
+The primary tool in this directory is a local demo generator and resolver for
+`DID:peer:2` identifiers with support for Trust Registry and Ecosystem service
+descriptors. It uses Streamlit for the web interface and cryptographic libraries
+to generate DID keys and services.
+
+Ayra profile identifiers are `did:webvh` DIDs. This tool is only a local
+service-profile encoding demo; generated `did:peer` values are not production
+Ayra ecosystem, trust registry, or cluster IDs.
 
 - [DID Creator UI](./did_creator_ui.py) - Web interface for generating DIDs
 - [DID Peer Utils](./did_peer_utils.py) - Core utilities for DID generation and resolution
@@ -46,11 +53,14 @@ The primary tool in this directory is a generator and resolver for `DID:peer:2` 
 
 1. **Generate Trust Registry DID**:
    - This generates a DID associated with the Trust Registry.
-   - The output includes the DID, Ed25519 Private Key, and X25519 Private Key.
+   - The output includes the DID and demo-only Ed25519/X25519 private keys.
 
 2. **Generate Ecosystem DID**:
    - This generates a DID for an ecosystem that points to the previously generated Trust Registry DID.
-   - The output includes the Ecosystem DID with its associated private keys.
+   - The output includes the Ecosystem DID with its associated demo-only private keys.
+
+The displayed private keys are for local demonstrations only. Do not use them in
+production deployments, logs, tickets, or shared documentation.
 
 3. **Resolve a DID**:
    - Input any DID string into the resolver to obtain the DID document.
