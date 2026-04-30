@@ -25,7 +25,13 @@ This directory contains tests to validate implementations against the Ayra Trust
 The API Conformance Test verifies that your Trust Registry implementation meets the requirements specified in the TRQP specification.
 
 ```bash
-python api_conformance_test.py --endpoint <your-trust-registry-endpoint>
+python api_conformance_test.py --base-url <your-trust-registry-base-url>
+```
+
+If the target registry requires bearer-token authentication, pass a token with:
+
+```bash
+python api_conformance_test.py --base-url <your-trust-registry-base-url> --bearer-token <token>
 ```
 
 ### Running Tests During Development
