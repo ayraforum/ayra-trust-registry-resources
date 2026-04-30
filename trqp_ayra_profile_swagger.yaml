@@ -2,6 +2,9 @@ openapi: 3.0.3
 info:
   title: Ayra TRQP Profile API
   version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
   description: |
     Combined OpenAPI specification for the Ayra Trust Network TRQP implementation.
     Endpoints are organized by tag:
@@ -24,11 +27,16 @@ tags:
   - name: lookup
     description: Lookup endpoints for discovery of trust parameters
 
+security:
+  - {}
+  - bearerAuth: []
+
 paths:
   
   /authorization:
     post:
       summary: Queries registry for Authorization, by an Ecosystem, of an Entity.
+      operationId: queryAuthorization
       tags:
         - trqp-core
       parameters:
@@ -93,6 +101,7 @@ paths:
   /recognition:
     post:
       summary: Queries registry for recognition, by an ecosystem, of another ecosystem.
+      operationId: queryRecognition
       tags:
         - trqp-core
       parameters:
@@ -244,12 +253,12 @@ paths:
         - ayra-extension
       description: |
         Retrieves a collection of authorizations that this entity has, according to the ecosystem queried.
-      operationId: listEcosystemRecognitions
+      operationId: listEntityAuthorizations
       parameters:
-        - name: ecosystem_did
+        - name: entity_did
           in: path
           required: true
-          description: Unique identifier of the ecosystem being queried.
+          description: Unique identifier of the entity being queried.
           schema:
             type: string
         
@@ -507,6 +516,12 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication. Registries MAY require this scheme according to their access policy; public endpoints MAY allow unauthenticated requests.
   schemas:
     
 
@@ -838,14 +853,11 @@ components:
         identifier:
           type: string
           format: URI
-          example:
-            - did:example:123
+          example: did:example:123
         name:
           type: string
-          example:
-            - LOA2
+          example: LOA2
         description:
           type: string
-          example:
-            - "Level of Assurance 2 - see EGF for definition, terms, obligations,liabilities, and indemnity"
+          example: "Level of Assurance 2 - see EGF for definition, terms, obligations, liabilities, and indemnity"
 
