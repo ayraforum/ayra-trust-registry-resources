@@ -1,63 +1,42 @@
 {
-    "name": "Ayra Trust Registry Resources",
-    "version": "0.0.1",
-    "description": "Ayra Trust Registry Resources",
-    "main": "./index",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/ayraforum/ayra-trust-registry-resources.git"
-    },
-    "scripts": {
-        "edit": "node -e \"require('spec-up')()\"",
-        "render": "sh prepare.sh && node -e \"require('spec-up')({ nowatch: true })\"",
-        "dev": "sh prepare.sh && node -e \"require('spec-up')({ dev: false })\""
-    },
-    "keywords": [
-        "spec",
-        "specs",
-        "markdown",
-        "editor",
-        "standards"
-    ],
-    "author": "Andor Kesselman",
-    "dependencies": {
-        "@anthropic-ai/claude-agent-sdk": "^0.1.1",
-        "@traptitech/markdown-it-katex": "3.3.0",
-        "axios": "^1.6.3",
-        "find-pkg-dir": "2.0.0",
-        "fs-extra": "8.1.0",
-        "gulp": "^3.9.1",
-        "gulp-clean-css": "4.3.0",
-        "gulp-concat": "2.6.1",
-        "gulp-terser": "1.2.0",
-        "markdown-it": "13.0.1",
-        "markdown-it-anchor": "5.2.5",
-        "markdown-it-attrs": "4.1.4",
-        "markdown-it-chart": "^0.2.0",
-        "markdown-it-container": "^2.0.0",
-        "markdown-it-deflist": "^2.1.0",
-        "markdown-it-icons": "^0.4.1",
-        "markdown-it-ins": "^2.0.0",
-        "markdown-it-mark": "^2.0.0",
-        "markdown-it-modify-token": "1.0.2",
-        "markdown-it-multimd-table": "^4.1.3",
-        "markdown-it-prism": "^2.2.0",
-        "markdown-it-references": "1.0.0-alpha.10",
-        "markdown-it-sub": "^1.0.0",
-        "markdown-it-sup": "^1.0.0",
-        "markdown-it-task-lists": "2.1.1",
-        "markdown-it-textual-uml": "0.1.3",
-        "markdown-it-toc-and-anchor": "4.2.0",
-        "merge-stream": "2.0.0",
-        "pkg-dir": "4.2.0",
-        "prismjs": ">=1.24.0",
-        "spec-up": ">=0.10.8",
-        "yargs": "16.2.0"
-    },
-    "overrides": {
-        "graceful-fs": "^4.2.11"
-    },
-    "resolutions": {
-        "graceful-fs": "^4.2.11"
-    }
+  "name": "ayra-trust-registry-resources",
+  "version": "0.0.1",
+  "description": "Ayra Trust Registry Resources",
+  "main": "./index",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ayraforum/ayra-trust-registry-resources.git"
+  },
+  "scripts": {
+    "edit": "node -e \"require('spec-up')()\"",
+    "render": "sh prepare.sh && node -e \"require('spec-up')({ nowatch: true })\"",
+    "dev": "sh prepare.sh && node -e \"require('spec-up')({ dev: false })\"",
+    "audit:prod": "npm audit --omit=dev --audit-level=high"
+  },
+  "keywords": [
+    "spec",
+    "specs",
+    "markdown",
+    "editor",
+    "standards"
+  ],
+  "author": "Andor Kesselman",
+  "dependencies": {
+    "spec-up": "0.10.8"
+  },
+  "overrides": {
+    "@traptitech/markdown-it-katex": "^3.6.0",
+    "axios": "^1.15.2",
+    "brace-expansion": "^2.0.2",
+    "braces": "^3.0.3",
+    "follow-redirects": "^1.16.0",
+    "form-data": "^4.0.4",
+    "gulp": "^5.0.1",
+    "katex": "^0.16.25",
+    "lodash": "^4.17.21",
+    "markdown-it": "13.0.1",
+    "micromatch": "^4.0.8",
+    "minimatch": "^3.1.2",
+    "semver": "^7.7.3"
+  }
 }

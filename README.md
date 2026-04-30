@@ -34,6 +34,11 @@ Interactive Swagger UI rendering of the TRQP and Ayra Profile API:
 
 We welcome contributions to improve these resources. Please see [CONTRIBUTING](./CONTRIBUTING) for details on how to contribute.
 
+## Dependency maintenance
+
+- JavaScript documentation tooling uses npm and the committed `package-lock.json`; install with `npm ci`.
+- Current dependency audit notes and accepted residual risk are documented in [Dependency risk notes](./docs/dependency-risk.md).
+
 ## Key Links
 
 - [TRQP v2.0 Specification](https://trustoverip.github.io/tswg-trust-registry-protocol/)
