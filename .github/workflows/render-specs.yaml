@@ -3,24 +3,74 @@ on:
   push:
     branches:
       - main
+  pull_request:
   workflow_dispatch:
+
 jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Render documentation
+        run: npm run render
+
+      - name: Lint OpenAPI profile
+        run: npx --yes @redocly/cli lint trqp_ayra_profile_swagger.yaml
+
+      - name: Validate JSON schemas
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          schema_paths = sorted(Path("schema").glob("*.jsonschema"))
+          schema_paths += sorted(Path("trqp/schema").glob("*.jsonschema"))
+          if not schema_paths:
+              raise SystemExit("No JSON schema files found under schema/ or trqp/schema/")
+          for path in schema_paths:
+              with path.open(encoding="utf-8") as schema_file:
+                  json.load(schema_file)
+              print(f"validated {path}")
+          PY
+
+      - name: Compile Python smoke-test tools
+        run: python -m compileall -q tests tools
+
   build-and-deploy-spec:
     runs-on: ubuntu-latest
+    needs: quality-gates
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install and Build
-        run: |
-          npm install
-          npm run render
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Render documentation
+        run: npm run render
 
       - name: Clean up
-        run: |
-          rm -rf node_modules
+        run: rm -rf node_modules
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3.7.3
