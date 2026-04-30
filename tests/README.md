@@ -1,41 +1,87 @@
-# Ayra Trust Network Conformance Tests
+# Ayra Trust Network Smoke Tests
 
-This directory contains tests to validate implementations against the Ayra Trust Network requirements.
+This directory contains a lightweight smoke test for Ayra Trust Registry implementers.
 
-## Available Tests
+## Available Test
 
-### API Conformance Test
+### TRQP Profile Smoke Test
 
-- [api_conformance_test.py](./api_conformance_test.py) - Tests a Trust Registry endpoint against the TRQP specification to verify compliance.
+- [api_conformance_test.py](./api_conformance_test.py) - despite the historical filename, this is now a small smoke test for the current Ayra TRQP Profile API surface.
 
-### Planned Tests (TODO)
+The script checks that an implementation exposes the current profile endpoints and returns profile-shaped JSON when those endpoints return `200`:
 
-- [did_conformance_test.py](./did_conformance_test.py) - Will check conformance of an Ecosystem DID that is being registered.
-- [authority_profile_test.py](./authority_profile_test.py) - Will check that an ecosystem is compliant to register in the Ayra Trust Network.
+- `POST /authorization`
+- `POST /recognition`
+- `GET /metadata`
+- `GET /lookups/assuranceLevels`
+- `GET /lookups/authorizations`
+- `GET /lookups/didMethods`
+
+It accepts expected unavailable/auth responses (`401`, `404`, and `501` for optional extension endpoints) so members can use it early while standing up a registry.
+
+## When to use this smoke test
+
+Use this script when you want a quick local sanity check that your Trust Registry is wired to the current Ayra profile endpoint shape.
+
+Good uses:
+
+1. Checking that your base URL is reachable.
+2. Confirming you implemented the current `POST /authorization` and `POST /recognition` request/response shapes.
+3. Confirming top-level lookup routes use `/lookups/...` and not older nested paths.
+4. Running a fast pre-flight before deeper interoperability testing.
+
+## When not to use this smoke test
+
+Do not use this script as certification or as the full Ayra conformance process. It does not verify credential issuance, holder/verifier flows, agent interoperability, protocol state machines, evidence reporting, negative cases, or full TRQP behavior.
+
+For advanced conformance and interoperability work, use the Ayra Conformance Test Suite instead:
+
+https://github.com/ayraforum/conformance-test-suite
 
 ## Requirements
 
 - Python 3.7 or higher
-- Dependencies required by the specific test scripts
+- `requests`
+
+Install the Python dependency if needed:
+
+```bash
+python -m pip install requests
+```
 
 ## Usage
 
-### API Conformance Test
-
-The API Conformance Test verifies that your Trust Registry implementation meets the requirements specified in the TRQP specification.
+Run the smoke test against your Trust Registry base URL:
 
 ```bash
-python api_conformance_test.py --endpoint <your-trust-registry-endpoint>
+python api_conformance_test.py --base-url <your-trust-registry-base-url>
 ```
 
-### Running Tests During Development
+If the target registry requires bearer-token authentication, pass a token with:
 
-These tests can be used during development to ensure your implementation remains compliant as you make changes. They can also be used as part of a CI/CD pipeline to continuously validate your implementation.
+```bash
+python api_conformance_test.py --base-url <your-trust-registry-base-url> --bearer-token <token>
+```
+
+You can override the example identifiers and PARC values used by the POST checks:
+
+```bash
+python api_conformance_test.py \
+  --base-url <your-trust-registry-base-url> \
+  --entity-id did:example:issuer \
+  --recognition-entity-id did:example:trust-registry \
+  --authority-id did:example:ecosystem \
+  --ecosystem-did did:example:ecosystem \
+  --authorization-action issue \
+  --authorization-resource credential \
+  --recognition-action recognize \
+  --recognition-resource trust-registry
+```
 
 ## Contributing New Tests
 
-If you would like to contribute additional tests, please follow these guidelines:
+Keep this repository's test script intentionally small. Add only smoke-level checks that help members catch endpoint-shape drift quickly.
 
-1. Ensure the test validates against the latest version of the specifications.
-2. Include clear documentation on what the test verifies and how to run it.
-3. Follow the contribution process outlined in [CONTRIBUTING](../CONTRIBUTING).
+If you need deeper conformance, interoperability, credential-flow, or protocol-state validation, contribute that work to the Ayra Conformance Test Suite:
+
+https://github.com/ayraforum/conformance-test-suite

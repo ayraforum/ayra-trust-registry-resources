@@ -1,381 +1,279 @@
 #!/usr/bin/env python3
+"""Ayra TRQP profile smoke test.
+
+This script is intentionally small. It checks that a Trust Registry exposes the
+current Ayra profile surface for a quick implementer sanity check. It is not the
+Ayra Conformance Test Suite and should not be used to certify advanced protocol,
+credential, or interoperability behavior.
+"""
+
 import argparse
 import sys
+
 import requests
 
 
-def test_get_metadata(base_url, headers):
-    """
-    Tests the GET /metadata endpoint.
-    Optional query param: egf_did.
-    Checks for a 200, 401, or 404 status code.
-    On 200, verifies JSON structure against 'TrustRegistryMetadata' basics.
-    """
-    print("\n=== Test: GET /metadata ===")
-    url = f"{base_url}/metadata"
-    params = {
-        # "egf_did": "did:example:egf"  # optional
+CORE_EXPECTED_STATUSES = {200, 400, 401, 404}
+OPTIONAL_EXPECTED_STATUSES = {200, 401, 404, 501}
+
+
+def build_headers(bearer_token):
+    headers = {"Accept": "application/json"}
+    if bearer_token:
+        headers["Authorization"] = f"Bearer {bearer_token}"
+    return headers
+
+
+def validate_required_fields(data, required_fields, response_name):
+    if not isinstance(data, dict):
+        print(f"    Expected JSON object for {response_name}.")
+        return False
+    for field in required_fields:
+        if field not in data:
+            print(f"    Missing '{field}' in {response_name}.")
+            return False
+    return True
+
+
+def validate_list_items(data, required_fields, response_name):
+    if not isinstance(data, list):
+        print(f"    Expected a list for {response_name}.")
+        return False
+    for item in data:
+        if not validate_required_fields(item, required_fields, response_name):
+            return False
+    return True
+
+
+def request_json(method, url, headers, expected_statuses, **kwargs):
+    print(f"--> Testing {method.upper()} {url}")
+    if kwargs.get("params"):
+        print(f"    params={kwargs['params']}")
+    if kwargs.get("json"):
+        print(f"    json={kwargs['json']}")
+
+    response = requests.request(method, url, headers=headers, timeout=15, **kwargs)
+    print(f"    Status: {response.status_code}")
+
+    if response.status_code not in expected_statuses:
+        print("    Unexpected status code.")
+        return False, None
+    if response.status_code == 200:
+        try:
+            return True, response.json()
+        except ValueError as ex:
+            print(f"    Expected JSON response: {ex}")
+            return False, None
+    return True, None
+
+
+def smoke_get_metadata(base_url, headers):
+    """GET /metadata should be reachable or explicitly unavailable."""
+    print("\n=== Smoke: GET /metadata ===")
+    ok, data = request_json(
+        "get",
+        f"{base_url}/metadata",
+        headers,
+        OPTIONAL_EXPECTED_STATUSES,
+    )
+    if not ok or data is None:
+        return ok
+    return validate_required_fields(data, ["ecosystem_did", "description"], "metadata response")
+
+
+def smoke_post_authorization(base_url, headers, entity_id, authority_id, action, resource):
+    """POST /authorization should accept the current TrqpAuthorizationQuery shape."""
+    print("\n=== Smoke: POST /authorization ===")
+    payload = {
+        "entity_id": entity_id,
+        "authority_id": authority_id,
+        "action": action,
+        "resource": resource,
+        "context": {},
     }
-    print(f"--> Testing GET {url} with params={params}")
-    try:
-        resp = requests.get(url, headers=headers, params=params)
-        print(f"    Status: {resp.status_code}")
-
-        if resp.status_code not in [200, 401, 404]:
-            print("    Unexpected status code.")
-            return False
-        if resp.status_code == 200:
-            # Basic structural check
-            data = resp.json()
-            if not isinstance(data, dict):
-                print("    Expected JSON object for metadata.")
-                return False
-            # Check required fields from TrustRegistryMetadata
-            for required_key in ["id", "description", "name", "controllers"]:
-                if required_key not in data:
-                    print(f"    Missing required key '{required_key}'.")
-                    return False
-    except Exception as ex:
-        print(f"    Exception occurred: {ex}")
-        return False
-    return True
+    ok, data = request_json(
+        "post",
+        f"{base_url}/authorization",
+        {**headers, "Content-Type": "application/json"},
+        CORE_EXPECTED_STATUSES,
+        json=payload,
+    )
+    if not ok or data is None:
+        return ok
+    return validate_required_fields(
+        data,
+        ["entity_id", "authority_id", "action", "resource", "time_evaluated", "authorized"],
+        "authorization response",
+    )
 
 
-def test_get_entity_information(base_url, headers, entity_id):
-    """
-    Tests GET /entities/{entity_id}.
-    Checks status (200, 401, 404).
-    On 200, expects a JSON object describing the entity.
-    """
-    print("\n=== Test: GET /entities/{entity_id} ===")
-    url = f"{base_url}/entities/{entity_id}"
-    print(f"--> Testing GET {url}")
-    try:
-        resp = requests.get(url, headers=headers)
-        print(f"    Status: {resp.status_code}")
-
-        if resp.status_code not in [200, 401, 404]:
-            print("    Unexpected status code.")
-            return False
-        if resp.status_code == 200:
-            data = resp.json()
-            if not isinstance(data, dict):
-                print("    Expected a JSON object for entity info.")
-                return False
-            # Optionally, check if it has at least some identifying field
-            # (Spec only says it's a JSON object, so minimal check done.)
-    except Exception as ex:
-        print(f"    Exception occurred: {ex}")
-        return False
-    return True
-
-
-def test_check_entity_authorization(base_url, headers, entity_id):
-    """
-    Tests GET /entities/{entity_id}/authorization.
-    Required query params: authorization_id, ecosystem_did, all.
-    Optional query param: time.
-    The 200 response can be either a single AuthorizationResponse or an array.
-    """
-    print("\n=== Test: GET /entities/{entity_id}/authorization ===")
-    url = f"{base_url}/entities/{entity_id}/authorization"
-    params = {
-        "authorization_id": "did:example:authz",
-        "ecosystem_did": "did:example:egf",
-        "all": False,  # or True, or the string "false"/"true" depending on your backend
-        # "time": "2025-01-01T12:00:00Z"
+def smoke_post_recognition(base_url, headers, entity_id, authority_id, action, resource):
+    """POST /recognition should accept the current TrqpRecognitionQuery shape."""
+    print("\n=== Smoke: POST /recognition ===")
+    payload = {
+        "entity_id": entity_id,
+        "authority_id": authority_id,
+        "action": action,
+        "resource": resource,
+        "context": {},
     }
-    print(f"--> Testing GET {url} with params={params}")
-    try:
-        resp = requests.get(url, headers=headers, params=params)
-        print(f"    Status: {resp.status_code}")
-
-        if resp.status_code not in [200, 401, 404]:
-            print("    Unexpected status code.")
-            return False
-
-        if resp.status_code == 200:
-            data = resp.json()
-            # Could be a single AuthorizationResponse or an array of them
-            if isinstance(data, dict):
-                # Check for 'authorized' in single object
-                if "authorized" not in data:
-                    print("    Missing 'authorized' key in single object response.")
-                    return False
-            elif isinstance(data, list):
-                # For array, each item should have an 'authorized' key
-                for item in data:
-                    if "authorized" not in item:
-                        print("    Missing 'authorized' key in one array item.")
-                        return False
-            else:
-                print("    Unexpected JSON type (expected dict or list).")
-                return False
-    except Exception as ex:
-        print(f"    Exception occurred: {ex}")
-        return False
-    return True
+    ok, data = request_json(
+        "post",
+        f"{base_url}/recognition",
+        {**headers, "Content-Type": "application/json"},
+        CORE_EXPECTED_STATUSES,
+        json=payload,
+    )
+    if not ok or data is None:
+        return ok
+    return validate_required_fields(
+        data,
+        ["entity_id", "authority_id", "action", "resource", "time_evaluated", "recognized"],
+        "recognition response",
+    )
 
 
-def test_check_ecosystem_recognition(base_url, headers, ecosystem_did):
-    """
-    Tests GET /registries/{ecosystem_did}/recognition
-    Required query param: egf_did
-    Optional query param: time
-    Expected 200, 401, or 404. On 200, must match RecognitionResponse structure.
-    """
-    print("\n=== Test: GET /registries/{ecosystem_did}/recognition ===")
-    url = f"{base_url}/registries/{ecosystem_did}/recognition"
-    params = {
-        "egf_did": "did:example:egf",
-        # "time": "2025-01-01T12:00:00Z"
-    }
-    print(f"--> Testing GET {url} with params={params}")
-    try:
-        resp = requests.get(url, headers=headers, params=params)
-        print(f"    Status: {resp.status_code}")
-
-        if resp.status_code not in [200, 401, 404]:
-            print("    Unexpected status code.")
-            return False
-
-        if resp.status_code == 200:
-            data = resp.json()
-            if not isinstance(data, dict):
-                print("    Expected a JSON object for recognition response.")
-                return False
-            # Check required keys from RecognitionResponse
-            for key in ["recognized", "message", "evaluated_at", "response_time"]:
-                if key not in data:
-                    print(f"    Missing '{key}' in recognition response.")
-                    return False
-    except Exception as ex:
-        print(f"    Exception occurred: {ex}")
-        return False
-    return True
+def smoke_lookup_assurance_levels(base_url, headers, ecosystem_did):
+    """GET /lookups/assuranceLevels should use the top-level Ayra profile path."""
+    print("\n=== Smoke: GET /lookups/assuranceLevels ===")
+    ok, data = request_json(
+        "get",
+        f"{base_url}/lookups/assuranceLevels",
+        headers,
+        OPTIONAL_EXPECTED_STATUSES,
+        params={"ecosystem_did": ecosystem_did},
+    )
+    if not ok or data is None:
+        return ok
+    return validate_list_items(data, ["assurance_level", "description"], "assurance levels response")
 
 
-def test_list_ecosystem_recognitions(base_url, headers, ecosystem_did):
-    """
-    Tests GET /ecosystems/{ecosystem_did}/recognitions
-    Optional query params: egf_did, time
-    Expect status 200, 401, or 404. On 200, returns array of RecognitionResponse objects.
-    """
-    print("\n=== Test: GET /ecosystems/{ecosystem_did}/recognitions ===")
-    url = f"{base_url}/ecosystems/{ecosystem_did}/recognitions"
-    params = {
-        # "egf_did": "did:example:egf",
-        # "time": "2025-01-01T12:00:00Z"
-    }
-    print(f"--> Testing GET {url} with params={params}")
-    try:
-        resp = requests.get(url, headers=headers, params=params)
-        print(f"    Status: {resp.status_code}")
-
-        if resp.status_code not in [200, 401, 404]:
-            print("    Unexpected status code.")
-            return False
-
-        if resp.status_code == 200:
-            data = resp.json()
-            if not isinstance(data, list):
-                print("    Expected a list of RecognitionResponse objects.")
-                return False
-            # Optionally check each item for 'recognized' key, etc.
-            for item in data:
-                if "recognized" not in item:
-                    print("    Missing 'recognized' in a recognition item.")
-                    return False
-    except Exception as ex:
-        print(f"    Exception occurred: {ex}")
-        return False
-    return True
+def smoke_lookup_authorizations(base_url, headers, ecosystem_did):
+    """GET /lookups/authorizations should use the top-level Ayra profile path."""
+    print("\n=== Smoke: GET /lookups/authorizations ===")
+    ok, data = request_json(
+        "get",
+        f"{base_url}/lookups/authorizations",
+        headers,
+        OPTIONAL_EXPECTED_STATUSES,
+        params={"ecosystem_did": ecosystem_did},
+    )
+    if not ok or data is None:
+        return ok
+    return validate_list_items(data, ["action", "resource"], "authorizations lookup response")
 
 
-def test_lookup_supported_assurance_levels(base_url, headers, ecosystem_did):
-    """
-    Tests GET /ecosystems/{ecosystem_did}/lookups/assuranceLevels
-    Expect 200, 401, or 404. On 200, returns array of AssuranceLevelResponse objects.
-    """
-    print("\n=== Test: GET /ecosystems/{ecosystem_did}/lookups/assuranceLevels ===")
-    url = f"{base_url}/ecosystems/{ecosystem_did}/lookups/assuranceLevels"
-    print(f"--> Testing GET {url}")
-    try:
-        resp = requests.get(url, headers=headers)
-        print(f"    Status: {resp.status_code}")
-
-        if resp.status_code not in [200, 401, 404]:
-            print("    Unexpected status code.")
-            return False
-
-        if resp.status_code == 200:
-            data = resp.json()
-            if not isinstance(data, list):
-                print("    Expected a list for assurance levels.")
-                return False
-            # Minimal check for each item
-            for level_info in data:
-                if not isinstance(level_info, dict):
-                    print("    Each item should be a JSON object.")
-                    return False
-                # The spec says the object has "assurance_level", "description", ...
-                # But also has 'egf_did' as well.
-                # We'll just check a couple to confirm minimal structure.
-                if "assurance_level" not in level_info:
-                    print("    Missing 'assurance_level' key in item.")
-                    return False
-    except Exception as ex:
-        print(f"    Exception occurred: {ex}")
-        return False
-    return True
+def smoke_lookup_did_methods(base_url, headers, ecosystem_did):
+    """GET /lookups/didMethods should use the top-level Ayra profile path."""
+    print("\n=== Smoke: GET /lookups/didMethods ===")
+    ok, data = request_json(
+        "get",
+        f"{base_url}/lookups/didMethods",
+        headers,
+        OPTIONAL_EXPECTED_STATUSES,
+        params={"ecosystem_did": ecosystem_did},
+    )
+    if not ok or data is None:
+        return ok
+    return validate_list_items(data, ["identifier"], "DID methods response")
 
 
-def test_lookup_authorizations(base_url, headers, ecosystem_did):
-    """
-    Tests GET /ecosystems/{ecosystem_did}/lookups/authorizations
-    Expect 200, 401, or 404. On 200, returns array of AuthorizationResponse objects.
-    """
-    print("\n=== Test: GET /ecosystems/{ecosystem_did}/lookups/authorizations ===")
-    url = f"{base_url}/ecosystems/{ecosystem_did}/lookups/authorizations"
-    print(f"--> Testing GET {url}")
-    try:
-        resp = requests.get(url, headers=headers)
-        print(f"    Status: {resp.status_code}")
+def run_smoke_tests(args):
+    """Runs quick Ayra TRQP profile smoke checks."""
+    base_url = args.base_url.rstrip("/")
+    headers = build_headers(args.bearer_token)
 
-        if resp.status_code not in [200, 401, 404]:
-            print("    Unexpected status code.")
-            return False
-
-        if resp.status_code == 200:
-            data = resp.json()
-            if not isinstance(data, list):
-                print("    Expected a list for authorization responses.")
-                return False
-            # Minimal check for each authorization response
-            for auth_item in data:
-                if "authorized" not in auth_item:
-                    print("    Missing 'authorized' key in an auth item.")
-                    return False
-    except Exception as ex:
-        print(f"    Exception occurred: {ex}")
-        return False
-    return True
-
-
-def test_lookup_supported_did_methods(base_url, headers, ecosystem_did):
-    """
-    Tests GET /egfs/{ecosystem_did}/lookups/didmethods
-    Expect 200, 401, or 404. On 200, returns DIDMethodListType (array of DIDMethodType).
-    """
-    print("\n=== Test: GET /egfs/{ecosystem_did}/lookups/didmethods ===")
-    url = f"{base_url}/egfs/{ecosystem_did}/lookups/didmethods"
-    print(f"--> Testing GET {url}")
-    try:
-        resp = requests.get(url, headers=headers)
-        print(f"    Status: {resp.status_code}")
-
-        if resp.status_code not in [200, 401, 404]:
-            print("    Unexpected status code.")
-            return False
-
-        if resp.status_code == 200:
-            data = resp.json()
-            if not isinstance(data, list):
-                print("    Expected a list of DIDMethodType objects.")
-                return False
-            # Check minimal structure
-            for method_item in data:
-                if "identifier" not in method_item:
-                    print("    Missing 'identifier' in DID method item.")
-                    return False
-    except Exception as ex:
-        print(f"    Exception occurred: {ex}")
-        return False
-    return True
-
-
-def run_all_tests(base_url, bearer_token):
-    """
-    Runs all test functions for the TRQP Profile API.
-    """
-    headers = {
-        "Accept": "application/json",
-        # If you do NOT use Bearer auth, remove or adjust the "Authorization" header.
-        "Authorization": f"Bearer {bearer_token}" if bearer_token else "",
-    }
-
-    # Provide dummy or example arguments for required path/query params.
-    # Adjust these as needed for your environment:
-    dummy_entity_id = "did:example:entity123"
-    dummy_ecosystem_did = "did:example:ecosystem"
-
-    tests = [
-        ("test_get_metadata", test_get_metadata(base_url, headers)),
+    checks = [
+        ("GET /metadata", smoke_get_metadata(base_url, headers)),
         (
-            "test_get_entity_information",
-            test_get_entity_information(base_url, headers, dummy_entity_id),
-        ),
-        (
-            "test_check_entity_authorization",
-            test_check_entity_authorization(base_url, headers, dummy_entity_id),
-        ),
-        (
-            "test_check_ecosystem_recognition",
-            test_check_ecosystem_recognition(base_url, headers, dummy_ecosystem_did),
-        ),
-        (
-            "test_list_ecosystem_recognitions",
-            test_list_ecosystem_recognitions(base_url, headers, dummy_ecosystem_did),
-        ),
-        (
-            "test_lookup_supported_assurance_levels",
-            test_lookup_supported_assurance_levels(
-                base_url, headers, dummy_ecosystem_did
+            "POST /authorization",
+            smoke_post_authorization(
+                base_url,
+                headers,
+                args.entity_id,
+                args.authority_id,
+                args.authorization_action,
+                args.authorization_resource,
             ),
         ),
         (
-            "test_lookup_authorizations",
-            test_lookup_authorizations(base_url, headers, dummy_ecosystem_did),
+            "POST /recognition",
+            smoke_post_recognition(
+                base_url,
+                headers,
+                args.recognition_entity_id,
+                args.authority_id,
+                args.recognition_action,
+                args.recognition_resource,
+            ),
         ),
         (
-            "test_lookup_supported_did_methods",
-            test_lookup_supported_did_methods(base_url, headers, dummy_ecosystem_did),
+            "GET /lookups/assuranceLevels",
+            smoke_lookup_assurance_levels(base_url, headers, args.ecosystem_did),
+        ),
+        (
+            "GET /lookups/authorizations",
+            smoke_lookup_authorizations(base_url, headers, args.ecosystem_did),
+        ),
+        (
+            "GET /lookups/didMethods",
+            smoke_lookup_did_methods(base_url, headers, args.ecosystem_did),
         ),
     ]
 
     overall_success = True
-    print("\n==================== Test Results ====================")
-    for test_name, result in tests:
+    print("\n==================== Smoke Test Results ====================")
+    for check_name, result in checks:
         status = "PASS" if result else "FAIL"
-        print(f"{test_name}: {status}")
-        if not result:
-            overall_success = False
+        print(f"{check_name}: {status}")
+        overall_success = overall_success and result
 
-    print("=====================================================")
+    print("============================================================")
     if overall_success:
-        print("ALL TESTS PASSED.")
-        sys.exit(0)
-    else:
-        print("ONE OR MORE TESTS FAILED.")
-        sys.exit(1)
+        print("SMOKE TESTS PASSED.")
+        return 0
+
+    print("ONE OR MORE SMOKE TESTS FAILED.")
+    return 1
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Ayra™ TRQP Profile API Test Script")
+    parser = argparse.ArgumentParser(
+        description="Ayra TRQP Profile smoke test. Use the full Ayra CTS for conformance certification."
+    )
     parser.add_argument(
         "--base-url",
         required=True,
-        help="The base URL of the TRQP-compliant Trust Registry API (e.g. https://example-trust-registry.com)",
+        help="Base URL of the Trust Registry API (for example, https://example-trust-registry.com)",
     )
     parser.add_argument(
         "--bearer-token",
-        required=False,
         default="",
-        help="Bearer token for authorization (if required).",
+        help="Bearer token for registries that require authorization.",
     )
+    parser.add_argument("--entity-id", default="did:example:entity123", help="Entity ID for /authorization.")
+    parser.add_argument(
+        "--recognition-entity-id",
+        default="did:example:trust-registry",
+        help="Entity/registry ID for /recognition.",
+    )
+    parser.add_argument(
+        "--authority-id",
+        default="did:example:ecosystem",
+        help="Authority/ecosystem ID for TRQP core queries.",
+    )
+    parser.add_argument(
+        "--ecosystem-did",
+        default="did:example:ecosystem",
+        help="Ecosystem DID used for lookup query parameters.",
+    )
+    parser.add_argument("--authorization-action", default="issue", help="Action for /authorization.")
+    parser.add_argument("--authorization-resource", default="credential", help="Resource for /authorization.")
+    parser.add_argument("--recognition-action", default="recognize", help="Action for /recognition.")
+    parser.add_argument("--recognition-resource", default="trust-registry", help="Resource for /recognition.")
     args = parser.parse_args()
 
-    run_all_tests(args.base_url, args.bearer_token)
+    sys.exit(run_smoke_tests(args))
 
 
 if __name__ == "__main__":
