@@ -74,6 +74,7 @@ In addition to the TRQP v2.0 core endpoints, the Ayra Profile defines the follow
 | :---- | :---- | :---- |
 | `/metadata` | GET | Retrieve Trust Registry metadata |
 | `/entities/{entity_id}` | GET | Retrieve entity information |
+| `/entities` | GET | List entities known to the Trust Registry (paginated, filterable) |
 | `/entities/{entity_did}/authorizations` | GET | List authorizations held by an entity |
 | `/ecosystems/{ecosystem_did}` | GET | Retrieve ecosystem information |
 | `/ecosystems/{ecosystem_did}/recognitions` | GET | List ecosystems recognized by a given ecosystem |

@@ -163,6 +163,23 @@ def smoke_lookup_authorizations(base_url, headers, ecosystem_did):
     return validate_list_items(data, ["action", "resource"], "authorizations lookup response")
 
 
+def smoke_list_entities(base_url, headers, ecosystem_did):
+    """GET /entities should list entities or signal non-support (optional endpoint)."""
+    print("\n=== Smoke: GET /entities ===")
+    ok, data = request_json(
+        "get",
+        f"{base_url}/entities",
+        headers,
+        OPTIONAL_EXPECTED_STATUSES,
+        params={"ecosystem_did": ecosystem_did, "limit": 10},
+    )
+    if not ok or data is None:
+        return ok
+    if not validate_required_fields(data, ["items", "pagination"], "entities list response"):
+        return False
+    return validate_list_items(data["items"], ["entity_id"], "entities list items")
+
+
 def smoke_lookup_did_methods(base_url, headers, ecosystem_did):
     """GET /lookups/didMethods should use the top-level Ayra profile path."""
     print("\n=== Smoke: GET /lookups/didMethods ===")
@@ -218,6 +235,10 @@ def run_smoke_tests(args):
         (
             "GET /lookups/didMethods",
             smoke_lookup_did_methods(base_url, headers, args.ecosystem_did),
+        ),
+        (
+            "GET /entities",
+            smoke_list_entities(base_url, headers, args.ecosystem_did),
         ),
     ]
 

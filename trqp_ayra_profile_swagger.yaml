@@ -296,7 +296,100 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
-  
+
+  /entities:
+    get:
+      summary: List Entities (Ayra extension)
+      tags:
+        - ayra-extension
+      description: |
+        Returns a paginated list of entities known to the Trust Registry,
+        optionally filtered by ecosystem and/or by a specific authorization
+        (action + resource pair from `/lookups/authorizations`).
+
+        This endpoint is OPTIONAL. Registries that do not implement it MUST
+        return HTTP 501.
+      operationId: listEntities
+      parameters:
+        - name: ecosystem_did
+          in: query
+          required: false
+          description: Restrict the listing to entities recognized within this ecosystem.
+          schema:
+            type: string
+        - name: action
+          in: query
+          required: false
+          description: |
+            Filter entities to those holding an authorization for this action.
+            If provided, `resource` MUST also be provided. Values SHOULD come
+            from `GET /lookups/authorizations`.
+          schema:
+            type: string
+        - name: resource
+          in: query
+          required: false
+          description: |
+            Filter entities to those holding an authorization for this resource.
+            If provided, `action` MUST also be provided.
+          schema:
+            type: string
+        - name: time
+          in: query
+          required: false
+          description: RFC3339 timestamp; entities authorized as of this time.
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of entities to return. Default 100, max 1000.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - name: offset
+          in: query
+          required: false
+          description: Zero-based offset into the result set.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Entity list retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityListResponse"
+        "400":
+          description: Invalid query parameters (e.g., `action` without `resource`, or out-of-range pagination).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Ecosystem not found (when `ecosystem_did` filter is unknown).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "501":
+          description: Method not implemented.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
   /ecosystems/{ecosystem_did}:
     get:
       summary: Retrieve Ecosystem Information
@@ -860,4 +953,56 @@ components:
         description:
           type: string
           example: "Level of Assurance 2 - see EGF for definition, terms, obligations, liabilities, and indemnity"
+
+    EntitySummary:
+      type: object
+      description: |
+        Minimal summary of an entity in a Trust Registry, used in list responses.
+        Callers can retrieve the full record via `GET /entities/{entity_id}`.
+      required:
+        - entity_id
+      properties:
+        entity_id:
+          type: string
+          format: URI
+          description: Unique identifier (typically a DID) for the entity.
+        name:
+          type: string
+          description: Optional human-readable name for the entity.
+        type:
+          type: string
+          description: Optional implementation-specific entity type or category.
+        ecosystem_did:
+          type: string
+          description: Optional identifier of the ecosystem this entity is associated with.
+
+    EntityListResponse:
+      type: object
+      description: A paginated list of entity summaries returned by `GET /entities`.
+      required:
+        - items
+        - pagination
+      properties:
+        items:
+          type: array
+          description: The page of entity summaries.
+          items:
+            $ref: "#/components/schemas/EntitySummary"
+        pagination:
+          type: object
+          description: Pagination metadata for this response.
+          required:
+            - limit
+            - offset
+            - total
+          properties:
+            limit:
+              type: integer
+              description: The `limit` value applied to this response.
+            offset:
+              type: integer
+              description: The `offset` value applied to this response.
+            total:
+              type: integer
+              description: Total number of entities matching the filter, across all pages.
 

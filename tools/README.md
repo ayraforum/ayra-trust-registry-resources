@@ -13,7 +13,7 @@ The primary tool in this directory is a generator and resolver for `DID:peer:2` 
 
 ## Requirements
 
-- Python 3.7 or higher
+- Python 3.10 or higher (required by the current Streamlit toolchain)
 - Libraries listed in [requirements.txt](./requirements.txt)
 
 ## Installation
