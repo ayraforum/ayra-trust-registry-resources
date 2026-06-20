@@ -22,7 +22,7 @@ Interactive Swagger UI rendering of the TRQP and Ayra Profile API:
 ## Schemas
 
 - [TRQP JSON Schemas](./trqp/schema/) -- JSON Schema definitions for TRQP v2.0 authorization and recognition queries and responses.
-- [Ayra Metadata Schema](./schema/ayra_metadata.jsonschema) -- JSON Schema for Ayra Trust Registry metadata.
+- [Ayra Metadata Schema](./schema/ayra_metadata.jsonschema) -- JSON Schema for the Ayra `GET /metadata` extension. It mirrors the OpenAPI `TrustRegistryMetadata` component and requires `ecosystem_did` and `description`.
 
 ## Getting Started
 

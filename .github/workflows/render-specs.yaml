@@ -47,8 +47,11 @@ jobs:
               print(f"validated {path}")
           PY
 
+      - name: Check metadata schema drift
+        run: python scripts/check_metadata_schema_drift.py
+
       - name: Compile Python smoke-test tools
-        run: python -m compileall -q tests tools
+        run: python -m compileall -q scripts tests tools
 
   build-and-deploy-spec:
     runs-on: ubuntu-latest

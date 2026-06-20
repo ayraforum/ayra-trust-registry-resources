@@ -839,20 +839,23 @@ components:
 
     TrustRegistryMetadata:
       type: object
+      description: |
+        Ayra profile extension metadata returned by GET /metadata.
+        TRQP v2.0 core does not prescribe a metadata endpoint; this schema defines
+        the Ayra Trust Network profile contract.
       required:
         - ecosystem_did
         - description
       properties:
         ecosystem_did:
           type: string
-          description: Unique identifier of the Ecosystem that the Trust Registry is associated with. This is used in TRQP queries as the `ecosytem_id` value.
+          description: Unique identifier of the ecosystem that the Trust Registry is associated with. This is used in TRQP queries as the ecosystem identifier value.
         trustregistry_did:
           type: string
-          description: Unique identifier, as DID, of the Trust Registry. 
+          description: Unique identifier, as a DID, of the Trust Registry.
         egf_did:
           type: string
-          description: The Primary EGF, identified by DID, for the ecosystem.
-        
+          description: Primary Ecosystem Governance Framework (EGF), identified by DID, for the ecosystem.
         description:
           type: string
           maxLength: 4096
@@ -866,8 +869,7 @@ components:
           items:
             type: string
           minItems: 1
-        additionalProperties:
-            type: string
+      additionalProperties: false
 
     Authorization:
       type: object

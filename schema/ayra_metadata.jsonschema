@@ -1,26 +1,33 @@
 {
   "$id": "ayra-metadata",
   "title": "AyraMetadata",
+  "description": "Ayra profile extension metadata returned by GET /metadata. TRQP v2.0 core does not prescribe a metadata endpoint; this schema defines the Ayra Trust Network profile contract.",
   "type": "object",
   "required": [
-    "id",
-    "name",
-    "description",
-    "controllers"
+    "ecosystem_did",
+    "description"
   ],
   "properties": {
-    "id": {
+    "ecosystem_did": {
       "type": "string",
-      "description": "Unique identifier of the Trust Registry. A DID (see DID-Core)"
+      "description": "Unique identifier of the ecosystem that the Trust Registry is associated with. This is used in TRQP queries as the ecosystem identifier value."
     },
-    "name": {
+    "trustregistry_did": {
       "type": "string",
-      "description": "Human-readable name of the Trust Registry."
+      "description": "Unique identifier, as a DID, of the Trust Registry."
+    },
+    "egf_did": {
+      "type": "string",
+      "description": "Primary Ecosystem Governance Framework (EGF), identified by DID, for the ecosystem."
     },
     "description": {
       "type": "string",
       "maxLength": 4096,
       "description": "A description of the Trust Registry."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name of the Trust Registry."
     },
     "controllers": {
       "type": "array",
@@ -29,10 +36,6 @@
         "type": "string"
       },
       "minItems": 1
-    },
-    "default_egf_did": {
-      "type": "string",
-      "description": "Default EGF, identified by DID, that will be used if none is supplied in various queries."
     }
   },
   "additionalProperties": false

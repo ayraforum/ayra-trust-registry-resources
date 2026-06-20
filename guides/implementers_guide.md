@@ -104,7 +104,7 @@ The following table maps TRQP v2.0 conformance requirements to what an Ayra impl
 | **Error format** | RFC 7807 Problem Details | RFC 7807 Problem Details |
 | **HTTP status codes** | 200, 400, 401, 404, 500 | 200, 400, 401, 404, 500 |
 | **Response signing** | Not required by TRQP core | MUST return JWS signed by the Trust Registry controller |
-| **Metadata endpoint** | Not defined in TRQP core | RECOMMENDED: `GET /metadata` (Ayra extension) |
+| **Metadata endpoint** | Not defined in TRQP core | RECOMMENDED: `GET /metadata` (Ayra extension) returning `ecosystem_did` and `description`, with optional `trustregistry_did`, `egf_did`, `name`, and `controllers` |
 | **Lookup endpoints** | Not defined in TRQP core | RECOMMENDED: assurance levels, authorizations, DID methods (Ayra extensions) |
 | **Ecosystem DID** | Not prescribed | MUST be `did:webvh` with at least two service endpoints |
 | **Trust Registry DID** | Not prescribed | MUST be `did:webvh` with at least one service endpoint |
