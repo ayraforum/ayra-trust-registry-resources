@@ -20,10 +20,12 @@
         },
         "action": {
             "type": "string",
+            "minLength": 1,
             "description": "The action being checked for recognition (e.g. 'recognize')."
         },
         "resource": {
             "type": "string",
+            "minLength": 1,
             "description": "The resource that the recognition applies to (e.g. 'listed-registry')."
         },
         "context": {

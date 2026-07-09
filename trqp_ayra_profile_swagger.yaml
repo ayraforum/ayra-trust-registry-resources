@@ -9,9 +9,18 @@ info:
     Combined OpenAPI specification for the Ayra Trust Network TRQP implementation.
     Endpoints are organized by tag:
     - **trqp-core**: TRQP v2.0 compliant endpoints (`POST /authorization`, `POST /recognition`)
-    - **ayra-extension**: Ayra-specific extension endpoints for metadata, entity lookup, ecosystem discovery, and lookups
+    - **ayra-extension**: Optional Ayra-specific extension endpoints for metadata, entity lookup, ecosystem discovery, and lookups
 
-    See the [Ayra TRQP Profile](https://ayraforum.github.io/ayra-trust-registry-resources/) for normative requirements.
+    TRQP v2.0 is the source of truth for core protocol behavior and field names.
+    W3C DID Core (https://www.w3.org/TR/did-core/) is the source of truth for
+    DID URI, DID method, DID controller, and DID Document semantics.
+    Ayra extension endpoints use generic `_id` parameter and property names to
+    align with TRQP v2.0, but Ayra Profile `_id` values are DID URI strings.
+    Supported DID methods are registry/authority-specific and discoverable
+    through lookup endpoints.
+    Optional extension endpoints that are not implemented return HTTP 501.
+
+    See the [Ayra TRQP Profile](https://ayraforum.github.io/ayra-trust-registry-resources/) for profile requirements.
 
 servers:
   - url: https://example-trust-registry.com
@@ -172,10 +181,10 @@ paths:
         Returns Trust Registry Metadata as a JSON object.
       operationId: getTrustRegistryMetadata
       parameters:
-        - name: egf_did
+        - name: authority_id
           in: query
           required: false
-          description: An optional identifier specifying which ecosystem's metadata should be retrieved.
+          description: Optional authority/ecosystem identifier specifying which metadata should be retrieved.
           schema:
             type: string
       responses:
@@ -216,7 +225,7 @@ paths:
         - in: path
           name: entity_id
           required: true
-          description: A unique identifier for the entity.
+          description: DID URI for the entity.
           schema:
             type: string
       responses:
@@ -246,7 +255,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
-  /entities/{entity_did}/authorizations:
+  /entities/{entity_id}/authorizations:
     get:
       summary: List Authorizations that this Entity has
       tags:
@@ -255,10 +264,10 @@ paths:
         Retrieves a collection of authorizations that this entity has, according to the ecosystem queried.
       operationId: listEntityAuthorizations
       parameters:
-        - name: entity_did
+        - name: entity_id
           in: path
           required: true
-          description: Unique identifier of the entity being queried.
+          description: DID URI for the entity being queried.
           schema:
             type: string
         
@@ -311,10 +320,10 @@ paths:
         return HTTP 501.
       operationId: listEntities
       parameters:
-        - name: ecosystem_did
+        - name: authority_id
           in: query
           required: false
-          description: Restrict the listing to entities recognized within this ecosystem.
+          description: Restrict the listing to entities recognized within this authority/ecosystem.
           schema:
             type: string
         - name: action
@@ -378,7 +387,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
         "404":
-          description: Ecosystem not found (when `ecosystem_did` filter is unknown).
+          description: Ecosystem not found (when `authority_id` filter is unknown).
           content:
             application/json:
               schema:
@@ -390,7 +399,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
-  /ecosystems/{ecosystem_did}:
+  /ecosystems/{ecosystem_id}:
     get:
       summary: Retrieve Ecosystem Information
       tags:
@@ -399,10 +408,10 @@ paths:
         Retrieves information about a specific ecosystem, including its metadata, recognition status, and other details.
       operationId: getEcosystemInformation
       parameters:
-        - name: ecosystem_did
+        - name: ecosystem_id
           in: path
           required: true
-          description: Unique identifier (DID) of the ecosystem being queried.
+          description: DID URI for the ecosystem being queried.
           schema:
             type: string
       responses:
@@ -432,7 +441,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
-  /ecosystems/{ecosystem_did}/recognitions:
+  /ecosystems/{ecosystem_id}/recognitions:
     get:
       summary: List Recognized Ecosystems
       tags:
@@ -441,10 +450,10 @@ paths:
         Retrieves a collection of recognized ecosystems for a specified governance framework.
       operationId: listEcosystemRecognitions
       parameters:
-        - name: ecosystem_did
+        - name: ecosystem_id
           in: path
           required: true
-          description: Unique identifier of the ecosystem being queried.
+          description: DID URI for the ecosystem being queried.
           schema:
             type: string
         - name: time
@@ -492,10 +501,10 @@ paths:
         Retrieves the supported assurance levels for the specified ecosystem.
       operationId: lookupSupportedAssuranceLevels
       parameters:
-        - name: ecosystem_did
+        - name: authority_id
           in: query
           required: false
-          description: Unique identifier of the ecosystem being queried.
+          description: DID URI for the authority/ecosystem being queried.
           schema:
             type: string
       responses:
@@ -530,10 +539,10 @@ paths:
         Performs an authorization lookup based on the provided ecosystem identifier. The returned action+resource pairs can be used in TRQP authorization queries for this ecosystem.
       operationId: lookupAuthorizations
       parameters:
-        - name: ecosystem_did
+        - name: authority_id
           in: query
           required: false
-          description: Ecosystem identifier.
+          description: Authority/ecosystem identifier.
           schema:
             type: string
       responses:
@@ -571,13 +580,13 @@ paths:
         - ayra-extension
         - lookup
       description: |
-        Retrieves the supported DID Methods. AYRA is opinionated here.
+        Retrieves the DID methods supported by this registry or authority, including any assurance-level limits.
       operationId: lookupSupportedDIDMethods
       parameters:
-        - name: ecosystem_did
+        - name: authority_id
           in: query
           required: false
-          description: Unique identifier of the ecosystem being queried.
+          description: DID URI for the authority/ecosystem being queried.
           schema:
             type: string
       responses:
@@ -588,7 +597,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/DIDMethodListType"
+                  $ref: "#/components/schemas/DIDMethodType"
         "401":
           description: Unauthorized request.
           content:
@@ -649,27 +658,29 @@ components:
       description: |
         A query request to a Trust Registry that supports TRQP 2.0. 
         Conforms with the schemas defined in TRQP 2.0. and matches the schema objects:
-        - trqp_recognition_request.jsonschema
+        - trqp_recognition_request.schema.json
         Used by the following TRQP POST queries:
         - POST /recognition
       properties:
         entity_id:
           type: string
-          format: URI
+          minLength: 1
           description: |
-            Unique identifier of the TRUST REGISTRY (identified by DID) that is the subject of the query. 
-            This is the "other trust registry" in the "Does your ecosystem recognized this **other trust registry** as assertion_id?". 
+            DID URI for the trust registry or other authority that is the subject of the query.
+            This is the entity in the question, "Does this authority recognize this entity for this action and resource?"
         authority_id:
           type: string
-          format: URI
+          minLength: 1
           description: |
-            Unique identifier of the ECOSYSTEM (identified by DID) that is being queried. 
-            This is the "your ecosystem" in the "Does **your ecosystem** recognize this other trust registry as assertion_id?".
+            DID URI for the authority/ecosystem that is being queried. 
+            This is the authority in the question, "Does this authority recognize this entity for this action and resource?"
         action: 
           type: string
+          minLength: 1
           description: The action that the query is checking Recognition for.
         resource: 
           type: string
+          minLength: 1
           description: The resource that the query is is checking Recognition for.
         context:
           type: object
@@ -696,25 +707,29 @@ components:
       description: |
         A query request to a Trust Registry that supports TRQP 2.0. 
         Conforms with the schemas defined in TRQP 2.0. and matches the schema objects:
-        - trqp_authorization_request.jsonschema
+        - trqp_authorization_request.schema.json
         Used by the following TRQP POST queries:
         - POST /authorization 
       properties:
         entity_id:
           type: string
+          minLength: 1
           description: |
-            Unique identifier of the TRUST REGISTRY (identified by DID) that is the subject of the query. 
+            DID URI for the entity that is the subject of the query. 
             This is the 'EntityX` in the "Does **EntityX** have AuthorityY in EcosystemZ?". 
         authority_id:
           type: string
+          minLength: 1
           description: |
-            Unique identifier of the ECOSYSTEM (identified by DID) that is being queried. 
+            DID URI for the authority/ecosystem that is being queried. 
             This is the "EcosystemZ" in the "Does EntityX have AuthorityY in **EcosystemZ**?". 
         action: 
           type: string
+          minLength: 1
           description: The action that the query is checking Authorization for.
         resource: 
           type: string
+          minLength: 1
           description: The resource that the query is is checking Authorization for.
         context:
           type: object
@@ -723,7 +738,7 @@ components:
               type: string
               format: date-time
               description: |
-                RFC3339 timestamp indicating when recognition is checked. 
+                RFC3339 timestamp indicating when authorization is checked. 
                 Defaults to "now" on system being queried if omitted.
           additionalProperties:
             type: string
@@ -740,19 +755,23 @@ components:
       type: object
       description: |
         A recognition response conforming to TRQP 2.0 specification and the
-        trqp_recognition_response.jsonschema requirements.
+        trqp_recognition_response.schema.json requirements.
       properties:
         entity_id:
           type: string
+          minLength: 1
           description: The identifier of the subject of the recognition query.
         authority_id:
           type: string
+          minLength: 1
           description: The id of the Authority entity.
         action: 
           type: string
+          minLength: 1
           description: The action that the query is checking Recognition for.
         resource: 
           type: string
+          minLength: 1
           description: The resource that the query is is checking Recognition for.
         recognized:
           type: boolean
@@ -790,19 +809,23 @@ components:
       type: object
       description: |
         An authorization response conforming to TRQP 2.0 specification and the
-        trqp_authorization_response.jsonschema requirements.
+        trqp_authorization_response.schema.json requirements.
       properties:
         entity_id:
           type: string
+          minLength: 1
           description: The identifier of the subject of the authorization.
         authority_id:
           type: string
+          minLength: 1
           description: The id of the Authority entity.
         action: 
           type: string
+          minLength: 1
           description: The action that the query is checking Authorization for.
         resource: 
           type: string
+          minLength: 1
           description: The resource that the query is is checking Authorization for.
         authorized:
           type: boolean
@@ -840,34 +863,38 @@ components:
     TrustRegistryMetadata:
       type: object
       required:
-        - ecosystem_did
+        - id
+        - name
         - description
       properties:
-        ecosystem_did:
+        id:
           type: string
-          description: Unique identifier of the Ecosystem that the Trust Registry is associated with. This is used in TRQP queries as the `ecosytem_id` value.
-        trustregistry_did:
+          description: DID URI for this Trust Registry or TRQP endpoint, as defined by W3C DID Core.
+        authority_id:
           type: string
-          description: Unique identifier, as DID, of the Trust Registry. 
-        egf_did:
+          description: Primary authority/ecosystem DID served by this registry. This is used as `authority_id` in TRQP queries when applicable.
+        governance_framework_id:
           type: string
-          description: The Primary EGF, identified by DID, for the ecosystem.
-        
+          description: Identifier for the primary ecosystem governance framework, when published by this registry.
+        name:
+          type: string
+          description: Human-readable name of the Trust Registry.
         description:
           type: string
           maxLength: 4096
           description: A description of the Trust Registry.
-        name:
-          type: string
-          description: Human-readable name of the Trust Registry.
         controllers:
           type: array
           description: List of unique identifiers representing the controllers of the Trust Registry.
           items:
             type: string
           minItems: 1
-        additionalProperties:
+        supported_did_methods:
+          type: array
+          description: DID methods supported by this registry, as defined by W3C DID Core. Support for a DID method does not imply support at every assurance level.
+          items:
             type: string
+      additionalProperties: false
 
     Authorization:
       type: object
@@ -887,9 +914,9 @@ components:
     AssuranceLevelResponse:
       type: object
       properties:
-        egf_did:
+        authority_id:
           type: string
-          description: EGF DID this assurance level applies to.
+          description: Authority/ecosystem identifier this assurance level applies to.
         assurance_level:
           type: string
           description: The assurance level.
@@ -906,18 +933,22 @@ components:
       required:
         - identifier
       description: |
-        DID Method supported by the trust registry. May include the maximum assurance level that this DID Method can support
+        DID Method supported by the trust registry or authority, as defined by
+        W3C DID Core (https://www.w3.org/TR/did-core/). Supported methods are
+        registry/authority-specific. `did:webvh` is preferred and may be required
+        for higher assurance levels. Use `maximumAssuranceLevel` to signal any
+        cap that applies to a supported DID method.
       properties:
         identifier:
           type: string
           description: |
             as "maintained" at [W3C](https://w3c.github.io/did-spec-registries/#did-methods) 
-        egf_did:
+        authority_id:
           type: string
-          description: EGF DID this DID Method applies to.
+          description: Authority/ecosystem identifier this DID Method applies to.
         maximumAssuranceLevel:
           description: |
-            A DID Method may, due to technical or human trust considerations be limited in the assurance level that it can provide.
+            A DID Method may, due to technical or human trust considerations, be limited in the assurance level that it can provide.
           allOf:
             - $ref: "#/components/schemas/AssuranceLevelType"
     
@@ -945,7 +976,7 @@ components:
       properties:
         identifier:
           type: string
-          format: URI
+          format: uri
           example: did:example:123
         name:
           type: string
@@ -964,17 +995,17 @@ components:
       properties:
         entity_id:
           type: string
-          format: URI
-          description: Unique identifier (typically a DID) for the entity.
+          minLength: 1
+          description: DID URI for the entity.
         name:
           type: string
           description: Optional human-readable name for the entity.
         type:
           type: string
           description: Optional implementation-specific entity type or category.
-        ecosystem_did:
+        authority_id:
           type: string
-          description: Optional identifier of the ecosystem this entity is associated with.
+          description: Optional authority/ecosystem DID this entity is associated with.
 
     EntityListResponse:
       type: object
@@ -1005,4 +1036,3 @@ components:
             total:
               type: integer
               description: Total number of entities matching the filter, across all pages.
-

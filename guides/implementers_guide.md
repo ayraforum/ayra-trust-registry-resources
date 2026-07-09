@@ -13,6 +13,7 @@ This document is a *non-normative* guide to help you implement the Trust Registr
 Before diving into implementation details, we recommend familiarizing yourself with:
 
 - [Trust Registry Query Protocol (TRQP) v2.0 Specification](https://trustoverip.github.io/tswg-trust-registry-protocol/)
+- [W3C DID Core](https://www.w3.org/TR/did-core/) -- DID URI, DID method, DID controller, and DID Document definitions
 - [Ayra TRQP Profile](https://ayraforum.github.io/ayra-trust-registry-resources)
 - [Introduction to Ayra](https://ayra.forum/ayra-introduction/)
 - [Ayra Technical Whitepaper](https://ayra.forum/ayra-technical-whitepaper/)
@@ -99,15 +100,15 @@ The following table maps TRQP v2.0 conformance requirements to what an Ayra impl
 | **HTTP method** | POST with JSON body | POST with JSON body |
 | **Content-Type** | MUST be `application/json` | MUST be `application/json` |
 | **Required query fields** | `entity_id`, `authority_id`, `action`, `resource` | Same |
-| **Identifier format** | RFC 3986 URI strings | `did:webvh` required for ecosystems and trust registries |
+| **Identifier format** | RFC 3986 URI strings | DID URI strings; supported DID methods are discoverable via `/lookups/didMethods`; `did:webvh` is preferred for higher assurance levels |
 | **DateTime format** | RFC 3339, Z offset only | RFC 3339, Z offset only |
 | **Error format** | RFC 7807 Problem Details | RFC 7807 Problem Details |
 | **HTTP status codes** | 200, 400, 401, 404, 500 | 200, 400, 401, 404, 500 |
-| **Response signing** | Not required by TRQP core | MUST return JWS signed by the Trust Registry controller |
+| **Response signing** | Not required by TRQP core | SHOULD return JWS signed by the Trust Registry controller or operator |
 | **Metadata endpoint** | Not defined in TRQP core | RECOMMENDED: `GET /metadata` (Ayra extension) |
 | **Lookup endpoints** | Not defined in TRQP core | RECOMMENDED: assurance levels, authorizations, DID methods (Ayra extensions) |
-| **Ecosystem DID** | Not prescribed | MUST be `did:webvh` with at least two service endpoints |
-| **Trust Registry DID** | Not prescribed | MUST be `did:webvh` with at least one service endpoint |
+| **Ecosystem/authority ID** | RFC 3986 string; globally unique for `authority_id` | DID URI string; globally unique for `authority_id`; supported DID methods are defined by the authority and may carry assurance limits |
+| **Trust Registry ID** | Not prescribed | DID URI string; supported DID methods are defined by the registry and may carry assurance limits |
 
 ---
 
@@ -119,8 +120,9 @@ Your implementation MUST:
 
 - Accept `POST /authorization` queries and return conforming Authorization Responses.
 - Accept `POST /recognition` queries and return conforming Recognition Responses.
-- Sign all responses with JWS using the Trust Registry controller's keys.
 - Use RFC 7807 Problem Details for all error responses.
+
+Your implementation SHOULD sign responses with JWS using the Trust Registry controller's or operator's keys where supported.
 
 This means your ecosystem **must** track and provide the state of who is authorized to do what, *and* publish that data via a TRQP-enabled endpoint.
 
@@ -226,19 +228,17 @@ Joining the Ayra Trust Network involves:
 
 ### Creating an Identifier for Your Registry
 
-1. **Prepare Your Trust Registry Keys** -- Generate cryptographic keys for your Trust Registry's DID.
+1. **Prepare Your Trust Registry Keys** -- Generate cryptographic keys for your Trust Registry identifier when the identifier method supports controller keys.
 
-2. **Create Your Trust Registry DID** -- Use `did:webvh` (as required by the Ayra Profile) and generate a DID. Your registry's DID **must** include at least one **service endpoint** referencing a TRQP profile at `https://ayra.forum/profiles/trqp/tr/v2`.
+2. **Create Your Trust Registry ID** -- Use a globally unique DID for the registry. The DID method you choose may affect the assurance level the registry can claim. `did:webvh` is preferred and may be required for higher assurance levels, while other DID methods may be acceptable according to authority policy. The DID Document should include at least one service endpoint referencing a TRQP profile at `https://ayra.forum/profiles/trqp/tr/v2`.
 
 ### Creating an Identifier for Your Ecosystem
 
-1. **Prepare Ecosystem Keys** -- Generate cryptographic keys for your ecosystem's DID.
+1. **Prepare Ecosystem Keys** -- Generate cryptographic keys for your ecosystem identifier when the identifier method supports controller keys.
 
-2. **Generate Your Ecosystem DID** -- The ecosystem DID **must** have at least two service endpoints:
-   - One pointing to the Ecosystem Governance Framework documentation.
-   - One pointing to the DID(s) of the Trust Registry.
+2. **Generate Your Ecosystem/Authority ID** -- The ecosystem DID is normally used as the TRQP `authority_id`. The DID Document should make the ecosystem governance framework and authoritative Trust Registry endpoint(s) discoverable.
 
-3. **Provide Your Ecosystem's DID to Ayra** -- Complete the governance review and register your ecosystem's DID with Ayra.
+3. **Provide Your Ecosystem/Authority ID to Ayra** -- Complete the governance review and register your ecosystem identifier with Ayra.
 
 ---
 
@@ -257,7 +257,7 @@ POST /recognition
 Content-Type: application/json
 
 {
-  "entity_id":    "{target_ecosystem_did}",
+  "entity_id":    "{target_ecosystem_id}",
   "authority_id": "did:webvh:ayra.forum",
   "action":       "recognize",
   "resource":     "ecosystem"
@@ -277,8 +277,8 @@ POST /authorization
 Content-Type: application/json
 
 {
-  "entity_id":    "{entity_did}",
-  "authority_id": "{target_ecosystem_did}",
+  "entity_id":    "{entity_id}",
+  "authority_id": "{target_ecosystem_id}",
   "action":       "issue",
   "resource":     "credential:driverlicense"
 }
@@ -337,9 +337,9 @@ The Ayra Trust Network defines additional endpoints on top of TRQP core. These e
 | :---- | :---- | :---- |
 | `GET /metadata` | Retrieve Trust Registry metadata | Initial discovery of a registry's identity, controllers, and default ecosystem |
 | `GET /entities/{entity_id}` | Retrieve entity information | Look up details about a specific entity in the registry |
-| `GET /entities/{entity_did}/authorizations` | List authorizations for an entity | Discover all authorizations an entity holds |
-| `GET /ecosystems/{ecosystem_did}` | Retrieve ecosystem information | Look up details about a specific ecosystem |
-| `GET /ecosystems/{ecosystem_did}/recognitions` | List recognized ecosystems | Discover which ecosystems are recognized under a governance framework |
+| `GET /entities/{entity_id}/authorizations` | List authorizations for an entity | Discover all authorizations an entity holds |
+| `GET /ecosystems/{ecosystem_id}` | Retrieve ecosystem information | Look up details about a specific ecosystem |
+| `GET /ecosystems/{ecosystem_id}/recognitions` | List recognized ecosystems | Discover which ecosystems are recognized under a governance framework |
 | `GET /lookups/assuranceLevels` | Discover assurance levels | Understand what assurance levels (e.g. LoA2, LoA3) are supported |
 | `GET /lookups/authorizations` | Discover available authorizations | Learn what action+resource pairs are valid in an ecosystem |
 | `GET /lookups/didMethods` | Discover supported DID methods | Determine which DID methods are accepted |
@@ -371,7 +371,7 @@ A `200` response with `authorized: false` is not an error -- it means the query 
 - **Trust Anchor Hijacking** -- Attackers may attempt to spoof or manipulate registry data. Use strong cryptographic anchors and key rotation.
 - **DNS Hijacking** -- If domain-based endpoints are used, DNS spoofing can misdirect queries. Use DNSSEC where possible.
 - **Replay Attacks** -- Reusing valid requests or responses to gain unauthorized access. Use timestamps, nonces, and short-lived tokens.
-- **Data Integrity** -- Use JWS to sign all responses (required by the Ayra Profile).
+- **Data Integrity** -- Use JWS to sign responses where supported (recommended by the Ayra Profile).
 - **Denial of Service** -- Rate limiting, caching, or load balancing may be necessary.
 - **Insufficient Data Validation** -- Validate all input against the TRQP JSON schemas before processing.
 - **Logging and Auditing** -- Maintain detailed access logs for attack detection and compliance.
@@ -381,7 +381,7 @@ A `200` response with `authorized: false` is not an error -- it means the query 
 ### Key Security Takeaways
 
 - Manage cryptographic keys securely and implement key rotation.
-- Provide robust, signed responses using JWS.
+- Provide robust responses and sign them using JWS where supported.
 - Retain thorough access logs.
 - Validate all inputs against the TRQP schemas.
 

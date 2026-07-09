@@ -11,6 +11,7 @@ Interactive Swagger UI rendering of the TRQP and Ayra Profile API:
 ## Normative Resources
 
 - [TRQP v2.0 Specification](https://trustoverip.github.io/tswg-trust-registry-protocol/) -- The Trust Registry Query Protocol specification
+- [W3C DID Core](https://www.w3.org/TR/did-core/) -- Decentralized Identifiers (DIDs) v1.0, including DID URI and DID Document definitions
 - [Ayra TRQP Profile API](./trqp_ayra_profile_swagger.yaml) -- OpenAPI specification covering TRQP v2.0 core and Ayra extensions
 - [Ayra TRQP Profile](./spec/profile.md) -- Profile required to register into the Ayra Trust Network
 
@@ -22,7 +23,7 @@ Interactive Swagger UI rendering of the TRQP and Ayra Profile API:
 ## Schemas
 
 - [TRQP JSON Schemas](./trqp/schema/) -- JSON Schema definitions for TRQP v2.0 authorization and recognition queries and responses.
-- [Ayra Metadata Schema](./schema/ayra_metadata.jsonschema) -- JSON Schema for Ayra Trust Registry metadata.
+- [Ayra Metadata Schema](./schema/ayra_metadata.schema.json) -- JSON Schema for Ayra Trust Registry metadata.
 
 ## Getting Started
 
@@ -42,4 +43,5 @@ We welcome contributions to improve these resources. Please see [CONTRIBUTING](.
 ## Key Links
 
 - [TRQP v2.0 Specification](https://trustoverip.github.io/tswg-trust-registry-protocol/)
+- [W3C DID Core](https://www.w3.org/TR/did-core/)
 - [TRQP Specification GitHub Repository](https://github.com/trustoverip/tswg-trust-registry-protocol/tree/main)

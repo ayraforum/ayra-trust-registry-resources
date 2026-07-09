@@ -78,7 +78,7 @@ def smoke_get_metadata(base_url, headers):
     )
     if not ok or data is None:
         return ok
-    return validate_required_fields(data, ["ecosystem_did", "description"], "metadata response")
+    return validate_required_fields(data, ["id", "name", "description"], "metadata response")
 
 
 def smoke_post_authorization(base_url, headers, entity_id, authority_id, action, resource):
@@ -133,7 +133,7 @@ def smoke_post_recognition(base_url, headers, entity_id, authority_id, action, r
     )
 
 
-def smoke_lookup_assurance_levels(base_url, headers, ecosystem_did):
+def smoke_lookup_assurance_levels(base_url, headers, authority_id):
     """GET /lookups/assuranceLevels should use the top-level Ayra profile path."""
     print("\n=== Smoke: GET /lookups/assuranceLevels ===")
     ok, data = request_json(
@@ -141,14 +141,14 @@ def smoke_lookup_assurance_levels(base_url, headers, ecosystem_did):
         f"{base_url}/lookups/assuranceLevels",
         headers,
         OPTIONAL_EXPECTED_STATUSES,
-        params={"ecosystem_did": ecosystem_did},
+        params={"authority_id": authority_id},
     )
     if not ok or data is None:
         return ok
     return validate_list_items(data, ["assurance_level", "description"], "assurance levels response")
 
 
-def smoke_lookup_authorizations(base_url, headers, ecosystem_did):
+def smoke_lookup_authorizations(base_url, headers, authority_id):
     """GET /lookups/authorizations should use the top-level Ayra profile path."""
     print("\n=== Smoke: GET /lookups/authorizations ===")
     ok, data = request_json(
@@ -156,14 +156,14 @@ def smoke_lookup_authorizations(base_url, headers, ecosystem_did):
         f"{base_url}/lookups/authorizations",
         headers,
         OPTIONAL_EXPECTED_STATUSES,
-        params={"ecosystem_did": ecosystem_did},
+        params={"authority_id": authority_id},
     )
     if not ok or data is None:
         return ok
     return validate_list_items(data, ["action", "resource"], "authorizations lookup response")
 
 
-def smoke_list_entities(base_url, headers, ecosystem_did):
+def smoke_list_entities(base_url, headers, authority_id):
     """GET /entities should list entities or signal non-support (optional endpoint)."""
     print("\n=== Smoke: GET /entities ===")
     ok, data = request_json(
@@ -171,7 +171,7 @@ def smoke_list_entities(base_url, headers, ecosystem_did):
         f"{base_url}/entities",
         headers,
         OPTIONAL_EXPECTED_STATUSES,
-        params={"ecosystem_did": ecosystem_did, "limit": 10},
+        params={"authority_id": authority_id, "limit": 10},
     )
     if not ok or data is None:
         return ok
@@ -180,7 +180,7 @@ def smoke_list_entities(base_url, headers, ecosystem_did):
     return validate_list_items(data["items"], ["entity_id"], "entities list items")
 
 
-def smoke_lookup_did_methods(base_url, headers, ecosystem_did):
+def smoke_lookup_did_methods(base_url, headers, authority_id):
     """GET /lookups/didMethods should use the top-level Ayra profile path."""
     print("\n=== Smoke: GET /lookups/didMethods ===")
     ok, data = request_json(
@@ -188,7 +188,7 @@ def smoke_lookup_did_methods(base_url, headers, ecosystem_did):
         f"{base_url}/lookups/didMethods",
         headers,
         OPTIONAL_EXPECTED_STATUSES,
-        params={"ecosystem_did": ecosystem_did},
+        params={"authority_id": authority_id},
     )
     if not ok or data is None:
         return ok
@@ -226,19 +226,19 @@ def run_smoke_tests(args):
         ),
         (
             "GET /lookups/assuranceLevels",
-            smoke_lookup_assurance_levels(base_url, headers, args.ecosystem_did),
+            smoke_lookup_assurance_levels(base_url, headers, args.authority_id),
         ),
         (
             "GET /lookups/authorizations",
-            smoke_lookup_authorizations(base_url, headers, args.ecosystem_did),
+            smoke_lookup_authorizations(base_url, headers, args.authority_id),
         ),
         (
             "GET /lookups/didMethods",
-            smoke_lookup_did_methods(base_url, headers, args.ecosystem_did),
+            smoke_lookup_did_methods(base_url, headers, args.authority_id),
         ),
         (
             "GET /entities",
-            smoke_list_entities(base_url, headers, args.ecosystem_did),
+            smoke_list_entities(base_url, headers, args.authority_id),
         ),
     ]
 
@@ -282,11 +282,6 @@ def main():
         "--authority-id",
         default="did:example:ecosystem",
         help="Authority/ecosystem ID for TRQP core queries.",
-    )
-    parser.add_argument(
-        "--ecosystem-did",
-        default="did:example:ecosystem",
-        help="Ecosystem DID used for lookup query parameters.",
     )
     parser.add_argument("--authorization-action", default="issue", help="Action for /authorization.")
     parser.add_argument("--authorization-resource", default="credential", help="Resource for /authorization.")

@@ -71,7 +71,6 @@ python api_conformance_test.py \
   --entity-id did:example:issuer \
   --recognition-entity-id did:example:trust-registry \
   --authority-id did:example:ecosystem \
-  --ecosystem-did did:example:ecosystem \
   --authorization-action issue \
   --authorization-resource credential \
   --recognition-action recognize \

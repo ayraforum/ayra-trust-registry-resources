@@ -6,19 +6,19 @@ This directory contains resources that track the alignment between the Ayra TRQP
 
 The Ayra TRQP Profile is a **profile** of TRQP v2.0. It:
 
-- **Requires** both `/authorization` and `/recognition` endpoints (TRQP v2.0 requires at least one). NOTE: either can return a 501 (NOT IMPLEMENTED), but both are required to conform with the Swagger/OAS specification.
-- **Constrains** identifiers to `did:webvh` (TRQP v2.0 allows any RFC 3986 URI).
-- **Adds** JWS response signing (not required by TRQP core).
+- **Requires** both `/authorization` and `/recognition` endpoints (TRQP v2.0 requires at least one). These core endpoints are mandatory for the Ayra Profile and MUST NOT use `501 Not Implemented` to indicate non-support.
+- **Requires** identifiers to use TRQP's `_id` field names. Ayra Profile `_id` values are DID URI strings; supported DID methods are discoverable through the Ayra DID methods lookup, and `did:webvh` is preferred and may be required for higher assurance levels.
+- **Recommends** JWS response signing (not required by TRQP core).
 - **Adds** extension endpoints for metadata, entity lookup, assurance levels, authorizations, and DID methods.
 
 ## Schemas
 
 The `schema/` directory contains JSON Schema files aligned with TRQP v2.0's PARC model (`entity_id`, `authority_id`, `action`, `resource`):
 
-- `trqp_authorization_request.jsonschema`
-- `trqp_authorization_response.jsonschema`
-- `trqp_recognition_request.jsonschema`
-- `trqp_recognition_response.jsonschema`
+- `trqp_authorization_request.schema.json`
+- `trqp_authorization_response.schema.json`
+- `trqp_recognition_request.schema.json`
+- `trqp_recognition_response.schema.json`
 
 ## Items for Future TRQP Consideration
 

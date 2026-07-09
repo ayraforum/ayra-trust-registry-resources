@@ -22,10 +22,12 @@
         },
         "action": {
             "type": "string",
+            "minLength": 1,
             "description": "The action that was checked for authorization."
         },
         "resource": {
             "type": "string",
+            "minLength": 1,
             "description": "The resource that the action applies to."
         },
         "authorized": {
