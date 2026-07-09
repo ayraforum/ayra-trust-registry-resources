@@ -18,6 +18,25 @@ Before diving into implementation details, we recommend familiarizing yourself w
 - [Introduction to Ayra](https://ayra.forum/ayra-introduction/)
 - [Ayra Technical Whitepaper](https://ayra.forum/ayra-technical-whitepaper/)
 
+## Source of Truth
+
+This guide is non-normative. Use it for explanation, examples, and implementation patterns.
+
+When this guide appears to conflict with a normative source, use this order:
+
+1. [TRQP v2.0](https://trustoverip.github.io/tswg-trust-registry-protocol/) for the core protocol model, HTTPS binding, and core field names.
+2. [W3C DID Core](https://www.w3.org/TR/did-core/) for DID URI, DID method, DID controller, and DID Document semantics.
+3. [Ayra TRQP Profile API](https://ayraforum.github.io/ayra-trust-registry-resources/api.html) for the Ayra API surface, request and response schemas, parameters, and status codes.
+4. [Ayra TRQP Profile](https://ayraforum.github.io/ayra-trust-registry-resources) for Ayra conformance policy.
+
+Practical rules to keep in mind:
+
+- Keep TRQP field names such as `entity_id` and `authority_id`; do not rename them to `_did`.
+- Ayra `_id` values are DID URI strings.
+- Supported DID methods are registry- or authority-specific and discoverable through `GET /lookups/didMethods`.
+- Ayra extension endpoints are optional; unsupported extension endpoints return HTTP 501 with Problem Details.
+- JWS response signing is recommended, not mandatory, until the signing mechanism is finalized.
+
 ## API Specifications
 
 The canonical API specification for Ayra TRQP is maintained as a single OpenAPI file and can be browsed interactively:
@@ -90,6 +109,20 @@ You can develop or reuse any *internal* trust model you prefer. The only require
 
 ---
 
+## Ayra Profile at a Glance
+
+Ayra-conformant Trust Registries:
+
+- **MUST** implement both TRQP core endpoints: `POST /authorization` and `POST /recognition`.
+- **MUST** use TRQP-compatible `_id` field names, including `entity_id` and `authority_id`; these fields **MUST NOT** be renamed to `_did`.
+- **MUST** represent all Ayra `_id` values as DID URI strings.
+- **MUST** return RFC 7807 Problem Details for error responses.
+- **MAY** implement Ayra extension endpoints for metadata, entity discovery, ecosystem discovery, and lookups.
+- **MUST** return HTTP 501 with Problem Details when an optional Ayra extension endpoint is not implemented.
+- **SHOULD** sign responses with JWS where supported; the signing mechanism is still being finalized.
+
+---
+
 ## Conformance Checklist
 
 The following table maps TRQP v2.0 conformance requirements to what an Ayra implementer must provide. This is a summary; refer to the [TRQP v2.0 specification](https://trustoverip.github.io/tswg-trust-registry-protocol/) and [Ayra Profile](https://ayraforum.github.io/ayra-trust-registry-resources) for normative requirements.
@@ -99,14 +132,14 @@ The following table maps TRQP v2.0 conformance requirements to what an Ayra impl
 | **Query types** | MUST support at least one (authorization OR recognition) | MUST support BOTH `/authorization` AND `/recognition` |
 | **HTTP method** | POST with JSON body | POST with JSON body |
 | **Content-Type** | MUST be `application/json` | MUST be `application/json` |
-| **Required query fields** | `entity_id`, `authority_id`, `action`, `resource` | Same |
+| **Required query fields** | `entity_id`, `authority_id`, `action`, `resource` | `entity_id`, `authority_id`, `action`, `resource` |
 | **Identifier format** | RFC 3986 URI strings | DID URI strings; supported DID methods are discoverable via `/lookups/didMethods`; `did:webvh` is preferred for higher assurance levels |
 | **DateTime format** | RFC 3339, Z offset only | RFC 3339, Z offset only |
 | **Error format** | RFC 7807 Problem Details | RFC 7807 Problem Details |
-| **HTTP status codes** | 200, 400, 401, 404, 500 | 200, 400, 401, 404, 500 |
+| **HTTP status codes** | 200, 400, 401, 404, 500 | Core endpoints use OpenAPI-defined core statuses and MUST NOT return `501`; unsupported optional extension endpoints return `501` |
 | **Response signing** | Not required by TRQP core | SHOULD return JWS signed by the Trust Registry controller or operator |
-| **Metadata endpoint** | Not defined in TRQP core | RECOMMENDED: `GET /metadata` (Ayra extension) |
-| **Lookup endpoints** | Not defined in TRQP core | RECOMMENDED: assurance levels, authorizations, DID methods (Ayra extensions) |
+| **Metadata endpoint** | Not defined in TRQP core | OPTIONAL: `GET /metadata` (Ayra extension); response shape is defined by the OpenAPI |
+| **Lookup endpoints** | Not defined in TRQP core | OPTIONAL: assurance levels, authorizations, DID methods (Ayra extensions) |
 | **Ecosystem/authority ID** | RFC 3986 string; globally unique for `authority_id` | DID URI string; globally unique for `authority_id`; supported DID methods are defined by the authority and may carry assurance limits |
 | **Trust Registry ID** | Not prescribed | DID URI string; supported DID methods are defined by the registry and may carry assurance limits |
 
@@ -306,7 +339,7 @@ sequenceDiagram
    Note over Verifier: Step 2 - Authorization
    Verifier->>DIDRes: Resolve Target Ecosystem DID
    DIDRes->>Verifier: DID Document
-   Verifier->>Verifier: Extract TR DID from serviceEndpoint
+   Verifier->>Verifier: Extract Trust Registry DID or TRQP service endpoint
 
    Verifier->>DIDRes: Resolve TR DID
    DIDRes->>Verifier: DID Document with TRQP endpoint
@@ -331,18 +364,18 @@ Detailed bridge case studies demonstrating how to connect specific trust framewo
 
 ## Ayra Extension Endpoints
 
-The Ayra Trust Network defines additional endpoints on top of TRQP core. These endpoints enable discovery of ecosystem-specific data beyond basic authorization and recognition. They are **RECOMMENDED** for full Ayra Trust Network participation.
+The Ayra Trust Network defines additional endpoints on top of TRQP core. These endpoints enable discovery of ecosystem-specific data beyond basic authorization and recognition. They are optional. Registries that do not implement an extension endpoint return HTTP 501 with a Problem Details response.
 
 | Endpoint | Description | Use Case |
 | :---- | :---- | :---- |
-| `GET /metadata` | Retrieve Trust Registry metadata | Initial discovery of a registry's identity, controllers, and default ecosystem |
+| `GET /metadata` | Retrieve Trust Registry metadata | Initial discovery of a registry's identity and published metadata; response shape is defined by the OpenAPI |
 | `GET /entities/{entity_id}` | Retrieve entity information | Look up details about a specific entity in the registry |
 | `GET /entities/{entity_id}/authorizations` | List authorizations for an entity | Discover all authorizations an entity holds |
 | `GET /ecosystems/{ecosystem_id}` | Retrieve ecosystem information | Look up details about a specific ecosystem |
 | `GET /ecosystems/{ecosystem_id}/recognitions` | List recognized ecosystems | Discover which ecosystems are recognized under a governance framework |
 | `GET /lookups/assuranceLevels` | Discover assurance levels | Understand what assurance levels (e.g. LoA2, LoA3) are supported |
 | `GET /lookups/authorizations` | Discover available authorizations | Learn what action+resource pairs are valid in an ecosystem |
-| `GET /lookups/didMethods` | Discover supported DID methods | Determine which DID methods are accepted |
+| `GET /lookups/didMethods` | Discover supported DID methods | Determine which DID methods are accepted and whether assurance-level limits apply |
 
 See the [Ayra TRQP Profile API](https://ayraforum.github.io/ayra-trust-registry-resources/api.html) for full details on request parameters, response schemas, and error codes.
 
@@ -350,7 +383,7 @@ See the [Ayra TRQP Profile API](https://ayraforum.github.io/ayra-trust-registry-
 
 ## Error Handling
 
-All error responses MUST conform to [RFC 7807 Problem Details](https://datatracker.ietf.org/doc/html/rfc7807). The following HTTP status codes are used:
+All error responses MUST conform to [RFC 7807 Problem Details](https://datatracker.ietf.org/doc/html/rfc7807). The OpenAPI specification defines the status codes for each endpoint. The most common statuses are:
 
 | Status Code | Meaning | When to Use |
 | :---- | :---- | :---- |
@@ -359,9 +392,10 @@ All error responses MUST conform to [RFC 7807 Problem Details](https://datatrack
 | **401** | Unauthorized | Missing or invalid bearer token (when authentication is required) |
 | **404** | Not Found | Entity, authority, action, or resource not recognized by this registry |
 | **500** | Internal Server Error | Unexpected server failure |
+| **501** | Not Implemented | Optional Ayra extension endpoint is not implemented |
 
 ::: note
-A `200` response with `authorized: false` is not an error -- it means the query was processed successfully and the entity is not authorized. Use `404` only when the registry does not recognize the identifiers at all.
+A `200` response with `authorized: false` or `recognized: false` is not an error -- it means the query was processed successfully and the answer is negative. Use `404` only when the registry does not recognize the identifiers or query terms at all. Core `/authorization` and `/recognition` endpoints are mandatory for Ayra and should not use `501` to signal non-support.
 :::
 
 ---
@@ -384,6 +418,20 @@ A `200` response with `authorized: false` is not an error -- it means the query 
 - Provide robust responses and sign them using JWS where supported.
 - Retain thorough access logs.
 - Validate all inputs against the TRQP schemas.
+
+---
+
+## Smoke Testing
+
+This repository includes a lightweight smoke test at [tests/api_conformance_test.py](../tests/api_conformance_test.py). Use it to check that a registry exposes the expected endpoint shape and returns profile-shaped JSON for implemented endpoints.
+
+The smoke test is not a certification suite. It does not prove full protocol, governance, credential-flow, or interoperability conformance.
+
+Example:
+
+```bash
+python tests/api_conformance_test.py --base-url https://example-trust-registry.com
+```
 
 ---
 
