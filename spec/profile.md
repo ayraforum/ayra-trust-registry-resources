@@ -10,6 +10,28 @@ This specification defines the Ayra TRQP Profile for the Ayra Trust Network. It 
 - [Implementers Guide](https://ayraforum.github.io/ayra-trust-registry-resources/guides/) -- non-normative guidance, examples, and integration patterns
 - [Ayra TRQP Profile API](https://ayraforum.github.io/ayra-trust-registry-resources/api.html) -- normative OpenAPI documentation for the Ayra TRQP Profile API surface (use tags to filter by `trqp-core` or `ayra-extension`)
 
+# **Normative References and Source of Truth**
+
+For this profile:
+
+1. [TRQP v2.0](https://trustoverip.github.io/tswg-trust-registry-protocol/) is authoritative for the core protocol model, HTTPS binding, and core field names.
+2. [W3C DID Core](https://www.w3.org/TR/did-core/) is authoritative for DID, DID URI, DID method, DID controller, and DID Document semantics.
+3. The [Ayra TRQP Profile API](https://ayraforum.github.io/ayra-trust-registry-resources/api.html) is authoritative for the Ayra API surface, request and response schemas, parameters, and status codes.
+4. This document is authoritative for Ayra profile requirements and conformance policy.
+5. The Implementers Guide is non-normative supporting material.
+
+# **Profile at a Glance**
+
+Ayra-conformant Trust Registries:
+
+- **MUST** implement both TRQP core endpoints: `POST /authorization` and `POST /recognition`.
+- **MUST** use TRQP-compatible `_id` field names, including `entity_id` and `authority_id`; these fields **MUST NOT** be renamed to `_did`.
+- **MUST** represent all Ayra `_id` values as DID URI strings.
+- **MUST** return RFC 7807 Problem Details for error responses.
+- **MAY** implement Ayra extension endpoints for metadata, entity discovery, ecosystem discovery, and lookups.
+- **MUST** return HTTP 501 with Problem Details when an optional Ayra extension endpoint is not implemented.
+- **SHOULD** sign responses with JWS where supported; the signing mechanism is still being finalized.
+
 # **Profile Overview**
 
 | Component | Ayra Profile Requirement |
@@ -53,17 +75,7 @@ All Trust Registries in the Ayra Trust Network **MUST** implement the [TRQP v2.0
 
 All queries use the PARC model with required fields: `entity_id`, `authority_id`, `action`, `resource`, and optional `context`, as defined by TRQP v2.0.
 
-All error responses **MUST** use [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) Problem Details format with appropriate HTTP status codes (400, 401, 404, 500).
-
-## Ayra Trust Network DID
-
-The Ayra Trust Network DID is:
-
-```text
-did:webvh:ayra.forum
-```
-
-Valid trust registries that serve the metaregistry state of the Ayra Trust Network are represented as `TrustRegistryService` service endpoints in the ATN DID Document.
+All core TRQP error responses **MUST** use [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) Problem Details format with appropriate HTTP status codes as defined by the Ayra TRQP Profile API. Core TRQP endpoints use the status codes defined for `/authorization` and `/recognition` in the OpenAPI specification and **MUST NOT** return HTTP 501 to indicate non-support.
 
 ## Ayra Extension Endpoints
 
@@ -83,6 +95,8 @@ In addition to the TRQP v2.0 core endpoints, the Ayra Profile defines the follow
 
 See the [Ayra TRQP Profile API](https://ayraforum.github.io/ayra-trust-registry-resources/api.html) for full endpoint details, request/response schemas, and error codes.
 
+The `/metadata` response shape and minimum required fields are defined by the Ayra TRQP Profile API. This profile intentionally does not duplicate the metadata schema.
+
 # **Security Requirements**
 
 ## Transport Security
@@ -96,3 +110,14 @@ Trust Registries returning TRQP-compliant responses in the Ayra Trust Network **
 ::: note
 The JWS signing mechanism (format, scope, and key discovery) is under active discussion. See [GitHub Issue #36](https://github.com/ayraforum/ayra-trust-registry-resources/issues/36) for current status. Until that mechanism is finalized, unsigned `application/json` responses remain conformant to the Ayra TRQP Profile API.
 :::
+
+# **Agent and Automation Notes**
+
+Automated agents, documentation tools, and conformance tools should apply these interpretation rules:
+
+- Treat TRQP v2.0, W3C DID Core, the Ayra TRQP Profile API, and this profile in the source-of-truth order listed above.
+- Do not rename TRQP fields to `_did`. Ayra uses TRQP-compatible `_id` field names and constrains the values to DID URI strings.
+- Do not assume only `did:webvh` and `did:web` are supported. Supported DID methods are registry- or authority-specific and discoverable through `GET /lookups/didMethods`.
+- Do not treat optional Ayra extension endpoints as mandatory. Unsupported extension endpoints return HTTP 501 with Problem Details.
+- Do not treat JWS response signing as mandatory. Response signing is a **SHOULD** until the signing mechanism is finalized.
+- JSON Schema files in this repository use the `.schema.json` extension.
