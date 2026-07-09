@@ -26,17 +26,19 @@
   },
   "overrides": {
     "@traptitech/markdown-it-katex": "^3.6.0",
-    "axios": "^1.15.2",
+    "axios": "^1.18.1",
     "brace-expansion": "^2.0.2",
     "braces": "^3.0.3",
     "follow-redirects": "^1.16.0",
-    "form-data": "^4.0.4",
+    "form-data": "^4.0.6",
     "gulp": "^5.0.1",
     "katex": "^0.16.25",
+    "linkify-it": "^5.0.2",
     "lodash": "^4.17.21",
     "markdown-it": "13.0.1",
     "micromatch": "^4.0.8",
     "minimatch": "^3.1.2",
-    "semver": "^7.7.3"
+    "semver": "^7.7.3",
+    "ws": "^8.21.0"
   }
 }

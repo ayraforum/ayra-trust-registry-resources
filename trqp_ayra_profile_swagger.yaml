@@ -951,17 +951,6 @@ components:
             A DID Method may, due to technical or human trust considerations, be limited in the assurance level that it can provide.
           allOf:
             - $ref: "#/components/schemas/AssuranceLevelType"
-    
-    
-    
-    
-    DIDMethodListType:
-      type: array
-      items:
-        $ref: "#/components/schemas/DIDMethodType"
-    
-    
-    
     AssuranceLevelType:
       type: object
       description: >

@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install Node dependencies
@@ -37,8 +37,8 @@ jobs:
           import json
           from pathlib import Path
 
-          schema_paths = sorted(Path("schema").glob("*.jsonschema"))
-          schema_paths += sorted(Path("trqp/schema").glob("*.jsonschema"))
+          schema_paths = sorted(Path("schema").glob("*.schema.json"))
+          schema_paths += sorted(Path("trqp/schema").glob("*.schema.json"))
           if not schema_paths:
               raise SystemExit("No JSON schema files found under schema/ or trqp/schema/")
           for path in schema_paths:
@@ -58,12 +58,12 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install Node dependencies
