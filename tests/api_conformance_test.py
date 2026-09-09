@@ -18,7 +18,7 @@ OPTIONAL_EXPECTED_STATUSES = {200, 401, 404, 501}
 
 
 def build_headers(bearer_token):
-    headers = {"Accept": "application/json"}
+    headers = {"Accept": "application/json, application/problem+json"}
     if bearer_token:
         headers["Authorization"] = f"Bearer {bearer_token}"
     return headers
@@ -64,6 +64,11 @@ def request_json(method, url, headers, expected_statuses, **kwargs):
         except ValueError as ex:
             print(f"    Expected JSON response: {ex}")
             return False, None
+
+    content_type = response.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
+    if content_type != "application/problem+json":
+        print(f"    Expected application/problem+json error response, received {content_type or 'no Content-Type'}.")
+        return False, None
     return True, None
 
 
