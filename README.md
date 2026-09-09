@@ -2,15 +2,17 @@
 
 This repository contains the Ayra Trust Registry Query Protocol (TRQP) Profile: the API specification, profile requirements, schemas, guides, and smoke tests needed to expose or consume Ayra-compatible trust registry services.
 
+The profile's primary purpose is to help a member Trust Registry faithfully expose authorization and recognition information governed by the authority or authorities it serves through a consistent query interface. It provides a thin technical interaction layer without prescribing the registry's internal trust model, taking control from its authorities, or making decisions for consumers. That shared interface also enables a registry to participate in the Ayra-operated Registry of Registries (RoR) that anchors the Ayra Trust Network and to interoperate directly with other conforming registries and consumers. The RoR does not become the source of a member registry's authority.
+
 # Core Principle
 
 > The registry **informs** the decision.
 >
 > The relying party **makes** the decision.
 
-TRQP provides authorization and recognition information. It does not make a relying party's trust, acceptance, or transaction decision.
+TRQP provides authorization and recognition information. It does not make a trust, acceptance, or transaction decision. In this principle, “relying party” is shorthand for any consuming organization or system that uses the information under its own policy, including a verifier, wallet application, agent, or other service.
 
-TRQP answers two core questions for verifiers and ecosystems:
+TRQP answers two core questions for consumers and ecosystems:
 
 - **Authorization:** Is this entity authorized to perform this action on this resource under this authority?
 - **Recognition:** Does this authority recognize this other authority or registry for this action and resource?

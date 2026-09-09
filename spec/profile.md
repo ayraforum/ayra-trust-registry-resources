@@ -1,6 +1,8 @@
 # **Ayra TRQP Profile**
 
-This specification defines the Ayra TRQP Profile for the Ayra Trust Network. It profiles the [Trust Registry Query Protocol (TRQP) v2.0](https://trustoverip.github.io/tswg-trust-registry-protocol/) for use within the Ayra Trust Network.
+This specification defines the Ayra TRQP Profile for the Ayra Trust Network. Its primary purpose is to enable a member Trust Registry to faithfully expose authorization and recognition information governed by the authority or authorities it serves. It profiles the [Trust Registry Query Protocol (TRQP) v2.0](https://trustoverip.github.io/tswg-trust-registry-protocol/) to provide a consistent query interface.
+
+The same interface enables a Trust Registry to participate in the Ayra-operated Registry of Registries (RoR) that anchors the Ayra Trust Network and to interoperate directly with other conforming registries and consumers. Neither the profile nor the RoR becomes the source of a member registry's authority.
 
 # **Core Principle**
 
@@ -8,12 +10,12 @@ This specification defines the Ayra TRQP Profile for the Ayra Trust Network. It 
 >
 > The relying party **makes** the decision.
 
-TRQP provides authorization and recognition information. It does not make a relying party's trust, acceptance, or transaction decision.
+TRQP provides authorization and recognition information. It does not make a trust, acceptance, or transaction decision. In this principle, “relying party” is shorthand for any consuming organization or system that uses the information under its own policy, including a verifier, wallet application, agent, or other service.
 
 | | |
 | :---- | :---- |
 | **Version** | v0.6.0-draft |
-| **Audience** | Implementors of Trust Registries participating in the Ayra Trust Network -- both TRQP API Providers and TRQP Consumers (Verifiers). |
+| **Audience** | Implementors of Trust Registries participating in the Ayra Trust Network -- both TRQP API Providers and TRQP consumers, including verifiers, wallet applications, agents, and other services. |
 
 - [Implementers Guide](https://ayraforum.github.io/ayra-trust-registry-resources/guides/) -- non-normative guidance, examples, and integration patterns
 - [Ayra TRQP Profile API](https://ayraforum.github.io/ayra-trust-registry-resources/api.html) -- normative OpenAPI documentation for the Ayra TRQP Profile API surface (use tags to filter by `trqp-core` or `ayra-extension`)
@@ -113,7 +115,7 @@ Adopting RFC 9457 would not, by itself, add HTTP status codes such as `429 Too M
 
 ## HTTP Errors and Query Results
 
-Consistent with the Core Principle, an HTTP error means that the TRQP query did not return authorization or recognition information. A consumer **MUST NOT** interpret an HTTP error, including a rate-limiting or temporary-service error, as `authorized: false` or `recognized: false`. Successful TRQP query results are information that a relying party may use when making its own trust decision.
+Consistent with the Core Principle, an HTTP error means that the TRQP query did not return authorization or recognition information. A consumer **MUST NOT** interpret an HTTP error, including a rate-limiting or temporary-service error, as `authorized: false` or `recognized: false`. Successful TRQP query results are information that a consuming organization or system may use when making or automating its own decision under its applicable policy.
 
 ## Rate Limiting
 

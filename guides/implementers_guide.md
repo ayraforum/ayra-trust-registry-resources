@@ -6,7 +6,7 @@
 See the [Profile](https://ayraforum.github.io/ayra-trust-registry-resources) for the Ayra TRQP Profile
 :::
 
-This document is a *non-normative* guide to help you implement the Trust Registry Query Protocol (TRQP) for participation in the Ayra Trust Network (ATN). It is intended as a starting point for understanding how to achieve trusted, cross-ecosystem data exchange using TRQP. By following this guide, you will learn the fundamentals of bridging your existing trust frameworks via a standardized interface.
+This document is a *non-normative* guide to help a member Trust Registry expose authorization and recognition information governed by the authority or authorities it serves through the Trust Registry Query Protocol (TRQP). The resulting interface supports direct use by consumers and participation in the Ayra-operated Registry of Registries (RoR) that anchors the Ayra Trust Network (ATN). It is intended as a starting point for bridging existing trust frameworks through a standardized interface; neither the profile nor the RoR becomes the source of a member registry's authority.
 
 ## Core Principle
 
@@ -14,7 +14,7 @@ This document is a *non-normative* guide to help you implement the Trust Registr
 >
 > The relying party **makes** the decision.
 
-TRQP provides authorization and recognition information. It does not make a relying party's trust, acceptance, or transaction decision.
+TRQP provides authorization and recognition information. It does not make a trust, acceptance, or transaction decision. In this principle, “relying party” is shorthand for any consuming organization or system that uses the information under its own policy, including a verifier, wallet application, agent, or other service.
 
 ## Important Pre-Reads
 
@@ -95,7 +95,7 @@ graph LR
   ATN_Registry -->|recognition| Verifier
 ```
 
-You can develop or reuse any *internal* trust model you prefer. The only requirement is that you expose the necessary TRQP endpoints so that external verifiers can query your trust state.
+You can develop or reuse any *internal* trust model you prefer. The profile requires you to expose the necessary TRQP endpoints so that external consumers can query the authorization and recognition information your registry is governed to provide.
 
 ### Key Participants
 
@@ -103,12 +103,12 @@ You can develop or reuse any *internal* trust model you prefer. The only require
 | :---- | :---- |
 | **TRQP API Provider** | Vendors that supply a Trust Registry Query Protocol (TRQP) service on behalf of an ecosystem. |
 | **Ayra Metaregistry Operators** | The set of metaregistry operators that serve the Ayra Trust Network state by relaying recognized ecosystems. |
-| **Verifier** | The end authority verifier that is interested in verifying not only the cryptography, but the validity of the author for the set of claims. |
-| **Ecosystem** | Ecosystems leverage TR vendors to manage their authority state. Each ecosystem must have sovereignty over their authority state. |
+| **TRQP Consumer** | An organization or system that uses registry information under its own policy. This may be a verifier, wallet application, agent, relying organization, or other service. |
+| **Ecosystem** | Ecosystems leverage TR vendors to manage their authority state. Each authority remains responsible for the information and rules within its domain of control. |
 
 ### Key Takeaways
 
-1. **The registry informs the decision; the relying party makes the decision.** TRQP supplies authorization and recognition information rather than making a relying party's trust, acceptance, or transaction decision.
+1. **The registry informs the decision; the relying party makes the decision.** “Relying party” here includes any consuming organization or system. TRQP supplies authorization and recognition information; the consumer makes or automates its own trust, acceptance, or transaction decision under its applicable policy.
 2. **TRQP complements** your systems of record, operational processes, and governance frameworks. It provides a simple, consistent way for external systems to query your system for only the answers you are willing to provide.
 3. **TRQP is a bridge** across frameworks and is agnostic to specific internal trust methods.
 4. You must handle how to **map your internal trust model** to TRQP's PARC query structure.
@@ -490,7 +490,7 @@ The Ayra Profile requires the EGF URI to be discoverable through the Ecosystem D
 
 An authorization represents a set of privileges granted to an entity -- an "official" sanction to perform a cryptographic function or other sensitive activity. (Source: [NIST SP 800-57 Part 2 Rev.1](https://csrc.nist.gov/glossary/term/permission))
 
-In TRQP v2.0, an authorization is expressed as an `action` + `resource` pair (e.g. action=`issue`, resource=`credential:driverlicense`). Your internal authorization models are entirely up to you. External verifiers will query with these parameters and receive a boolean `authorized` response.
+In TRQP v2.0, an authorization is expressed as an `action` + `resource` pair (e.g. action=`issue`, resource=`credential:driverlicense`). Your internal authorization models are entirely up to you. External consumers will query with these parameters and receive a boolean `authorized` response.
 
 ### What types of entries can I support?
 

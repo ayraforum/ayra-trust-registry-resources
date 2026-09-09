@@ -9,9 +9,18 @@ info:
     Combined OpenAPI specification for the Ayra Trust Network TRQP implementation.
     OpenAPI version 1.1.0 corresponds to Ayra TRQP Profile v0.6.0-draft.
 
+    The profile primarily enables a member Trust Registry to expose authorization
+    and recognition information governed by the authority or authorities it serves.
+    The same interface supports direct use by consumers and participation in the
+    Ayra-operated Registry of Registries that anchors the Ayra Trust Network.
+    Neither the profile nor the Registry of Registries is the source of a member
+    registry's authority.
+
     **Core principle:** The registry **informs** the decision. The relying party
     **makes** the decision. TRQP provides authorization and recognition information;
-    it does not make a relying party's trust, acceptance, or transaction decision.
+    it does not make a trust, acceptance, or transaction decision. “Relying party”
+    includes any consuming organization or system, such as a verifier, wallet
+    application, agent, or other service, that uses the information under its own policy.
 
     Endpoints are organized by tag:
     - **trqp-core**: TRQP v2.0 compliant endpoints (`POST /authorization`, `POST /recognition`)
