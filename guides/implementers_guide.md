@@ -8,6 +8,14 @@ See the [Profile](https://ayraforum.github.io/ayra-trust-registry-resources) for
 
 This document is a *non-normative* guide to help you implement the Trust Registry Query Protocol (TRQP) for participation in the Ayra Trust Network (ATN). It is intended as a starting point for understanding how to achieve trusted, cross-ecosystem data exchange using TRQP. By following this guide, you will learn the fundamentals of bridging your existing trust frameworks via a standardized interface.
 
+## Core Principle
+
+> The registry **informs** the decision.
+>
+> The relying party **makes** the decision.
+
+TRQP provides authorization and recognition information. It does not make a relying party's trust, acceptance, or transaction decision.
+
 ## Important Pre-Reads
 
 Before diving into implementation details, we recommend familiarizing yourself with:
@@ -100,10 +108,11 @@ You can develop or reuse any *internal* trust model you prefer. The only require
 
 ### Key Takeaways
 
-1. **TRQP complements** your systems of record, operational processes, and governance frameworks. It provides a simple, consistent way for external systems to query your system for only the answers you are willing to provide.
-2. **TRQP is a bridge** across frameworks and is agnostic to specific internal trust methods.
-3. You must handle how to **map your internal trust model** to TRQP's PARC query structure.
-4. **TRQP answers two questions:**
+1. **The registry informs the decision; the relying party makes the decision.** TRQP supplies authorization and recognition information rather than making a relying party's trust, acceptance, or transaction decision.
+2. **TRQP complements** your systems of record, operational processes, and governance frameworks. It provides a simple, consistent way for external systems to query your system for only the answers you are willing to provide.
+3. **TRQP is a bridge** across frameworks and is agnostic to specific internal trust methods.
+4. You must handle how to **map your internal trust model** to TRQP's PARC query structure.
+5. **TRQP answers two questions:**
    - Is this entity authorized? -- "Does Entity X have the right to perform Action Y on Resource Z, in the context of Ecosystem W?"
    - Do you recognize this other ecosystem? -- "Does Ecosystem A recognize Ecosystem B for Action Y on Resource Z?"
 
@@ -116,7 +125,8 @@ Ayra-conformant Trust Registries:
 - **MUST** implement both TRQP core endpoints: `POST /authorization` and `POST /recognition`.
 - **MUST** use TRQP-compatible `_id` field names, including `entity_id` and `authority_id`; these fields **MUST NOT** be renamed to `_did`.
 - **MUST** represent all Ayra `_id` values as DID URI strings.
-- **MUST** return RFC 7807 Problem Details for error responses.
+- **MUST** return RFC 7807 Problem Details using `application/problem+json` for error responses.
+- **MAY** apply rate limits; a returned rate-limit response uses HTTP 429 and does not provide an authorization or recognition result.
 - **MAY** implement Ayra extension endpoints for metadata, entity discovery, ecosystem discovery, and lookups.
 - **MUST** return HTTP 501 with Problem Details when an optional Ayra extension endpoint is not implemented.
 - **SHOULD** sign responses with JWS where supported; the signing mechanism is still being finalized.
@@ -131,12 +141,12 @@ The following table maps TRQP v2.0 conformance requirements to what an Ayra impl
 | :---- | :---- | :---- |
 | **Query types** | MUST support at least one (authorization OR recognition) | MUST support BOTH `/authorization` AND `/recognition` |
 | **HTTP method** | POST with JSON body | POST with JSON body |
-| **Content-Type** | MUST be `application/json` | MUST be `application/json` |
+| **Request Content-Type** | MUST be `application/json` | MUST be `application/json` |
 | **Required query fields** | `entity_id`, `authority_id`, `action`, `resource` | `entity_id`, `authority_id`, `action`, `resource` |
 | **Identifier format** | RFC 3986 URI strings | DID URI strings; supported DID methods are discoverable via `/lookups/didMethods`; `did:webvh` is preferred for higher assurance levels |
 | **DateTime format** | RFC 3339, Z offset only | RFC 3339, Z offset only |
-| **Error format** | RFC 7807 Problem Details | RFC 7807 Problem Details |
-| **HTTP status codes** | 200, 400, 401, 404, 500 | Core endpoints use OpenAPI-defined core statuses and MUST NOT return `501`; unsupported optional extension endpoints return `501` |
+| **Error format** | RFC 7807 Problem Details using `application/problem+json` | RFC 7807 Problem Details using `application/problem+json` |
+| **HTTP status codes** | 200, 400, 401, 404, 500 | Core endpoints additionally support profile-defined `429`; core endpoints MUST NOT return `501`; unsupported optional extension endpoints return `501` |
 | **Response signing** | Not required by TRQP core | SHOULD return JWS signed by the Trust Registry controller or operator |
 | **Metadata endpoint** | Not defined in TRQP core | OPTIONAL: `GET /metadata` (Ayra extension); response shape is defined by the OpenAPI |
 | **Lookup endpoints** | Not defined in TRQP core | OPTIONAL: assurance levels, authorizations, DID methods (Ayra extensions) |
@@ -153,7 +163,8 @@ Your implementation MUST:
 
 - Accept `POST /authorization` queries and return conforming Authorization Responses.
 - Accept `POST /recognition` queries and return conforming Recognition Responses.
-- Use RFC 7807 Problem Details for all error responses.
+- Use RFC 7807 Problem Details with `Content-Type: application/problem+json` for all error responses.
+- Return HTTP 429 with RFC 7807 Problem Details when responding because a request rate limit has been exceeded.
 
 Your implementation SHOULD sign responses with JWS using the Trust Registry controller's or operator's keys where supported.
 
@@ -211,7 +222,10 @@ Content-Type: application/json
 
 **Error Response (404):**
 
-```json
+```http
+HTTP/1.1 404 Not Found
+Content-Type: application/problem+json
+
 {
   "type":   "https://example.com/problems/entity-not-found",
   "title":  "Entity not found",
@@ -383,7 +397,9 @@ See the [Ayra TRQP Profile API](https://ayraforum.github.io/ayra-trust-registry-
 
 ## Error Handling
 
-All error responses MUST conform to [RFC 7807 Problem Details](https://datatracker.ietf.org/doc/html/rfc7807). The OpenAPI specification defines the status codes for each endpoint. The most common statuses are:
+All error responses MUST conform to [RFC 7807 Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) and use `Content-Type: application/problem+json`. The OpenAPI specification defines the status codes for each endpoint. The most common statuses are:
+
+RFC 7807 remains the applicable requirement because this Ayra profile targets TRQP v2.0. RFC 9457 has obsoleted RFC 7807 at the IETF level, but it is only a forward-compatibility consideration for Ayra unless a future TRQP version and corresponding Ayra profile version expressly adopt it. Both versions use `application/problem+json`; clients cannot infer the governing RFC from the media type or the core Problem Details members.
 
 | Status Code | Meaning | When to Use |
 | :---- | :---- | :---- |
@@ -391,12 +407,39 @@ All error responses MUST conform to [RFC 7807 Problem Details](https://datatrack
 | **400** | Bad Request | Invalid JSON, missing required fields, malformed identifiers |
 | **401** | Unauthorized | Missing or invalid bearer token (when authentication is required) |
 | **404** | Not Found | Entity, authority, action, or resource not recognized by this registry |
+| **429** | Too Many Requests | Request rate limit exceeded; no authorization or recognition result was returned |
 | **500** | Internal Server Error | Unexpected server failure |
 | **501** | Not Implemented | Optional Ayra extension endpoint is not implemented |
 
 ::: note
 A `200` response with `authorized: false` or `recognized: false` is not an error -- it means the query was processed successfully and the answer is negative. Use `404` only when the registry does not recognize the identifiers or query terms at all. Core `/authorization` and `/recognition` endpoints are mandatory for Ayra and should not use `501` to signal non-support.
 :::
+
+### Rate Limiting
+
+Registries may apply rate limits to any core or extension endpoint. If a registry returns a response because a rate limit was exceeded, it uses HTTP 429 with an RFC 7807 Problem Details body:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/problem+json
+Retry-After: 60
+Cache-Control: no-store
+
+{
+  "type": "about:blank",
+  "title": "Too Many Requests",
+  "status": 429,
+  "detail": "The request rate limit has been exceeded."
+}
+```
+
+`Retry-After` should be included when useful retry timing is available. A consumer should honor it; if it is absent, use bounded exponential backoff with jitter according to local policy. Do not parse `title` or `detail` for retry timing.
+
+The `about:blank` type is sufficient for the standard HTTP 429 meaning. A registry may instead use a stable, documented problem type URI and may add extensions such as `documentation` or `contact`. Consumers must ignore extensions they do not recognize.
+
+A 429 response means that the registry did not answer the authorization or recognition question. Never interpret it as `authorized: false` or `recognized: false`, and never store it as a negative result. Responses with status 429 must not be stored by a cache.
+
+This response shape conforms to RFC 7807 and is also compatible with RFC 9457. Supporting it does not adopt RFC 9457 as the normative error specification for this profile.
 
 ---
 
@@ -406,7 +449,7 @@ A `200` response with `authorized: false` or `recognized: false` is not an error
 - **DNS Hijacking** -- If domain-based endpoints are used, DNS spoofing can misdirect queries. Use DNSSEC where possible.
 - **Replay Attacks** -- Reusing valid requests or responses to gain unauthorized access. Use timestamps, nonces, and short-lived tokens.
 - **Data Integrity** -- Use JWS to sign responses where supported (recommended by the Ayra Profile).
-- **Denial of Service** -- Rate limiting, caching, or load balancing may be necessary.
+- **Denial of Service** -- Rate limiting, caching, or load balancing may be necessary. When returning a rate-limit response, use the profile-defined HTTP 429 behavior.
 - **Insufficient Data Validation** -- Validate all input against the TRQP JSON schemas before processing.
 - **Logging and Auditing** -- Maintain detailed access logs for attack detection and compliance.
 - **Protocol Downgrade Attacks** -- Always use the latest TRQP version; do not allow fallback.

@@ -17,7 +17,7 @@ The script checks that an implementation exposes the current profile endpoints a
 - `GET /lookups/authorizations`
 - `GET /lookups/didMethods`
 
-It accepts expected unavailable/auth responses (`401`, `404`, and `501` for optional extension endpoints) so members can use it early while standing up a registry.
+It accepts expected unavailable/auth responses (`401`, `404`, and `501` for optional extension endpoints) and profile-defined `429` rate-limit responses so members can use it early while standing up a registry. For non-200 responses, it verifies the `application/problem+json` media type, a JSON Problem Details object, and consistency between the HTTP status and any `status` member. A 429 response must not include `authorized` or `recognized` query-result fields.
 
 ## When to use this smoke test
 

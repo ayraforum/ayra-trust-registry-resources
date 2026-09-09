@@ -1,12 +1,18 @@
 openapi: 3.0.3
 info:
   title: Ayra TRQP Profile API
-  version: 1.0.0
+  version: 1.1.0
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   description: |
     Combined OpenAPI specification for the Ayra Trust Network TRQP implementation.
+    OpenAPI version 1.1.0 corresponds to Ayra TRQP Profile v0.6.0-draft.
+
+    **Core principle:** The registry **informs** the decision. The relying party
+    **makes** the decision. TRQP provides authorization and recognition information;
+    it does not make a relying party's trust, acceptance, or transaction decision.
+
     Endpoints are organized by tag:
     - **trqp-core**: TRQP v2.0 compliant endpoints (`POST /authorization`, `POST /recognition`)
     - **ayra-extension**: Optional Ayra-specific extension endpoints for metadata, entity lookup, ecosystem discovery, and lookups
@@ -100,6 +106,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+        429:
+          $ref: '#/components/responses/RateLimited'
         500:
           description: Internal server error
           content:
@@ -165,6 +173,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+        429:
+          $ref: '#/components/responses/RateLimited'
         500:
           description: Internal server error
           content:
@@ -206,6 +216,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          $ref: "#/components/responses/RateLimited"
         "501":
           description: Method not implemented.
           content:
@@ -248,6 +260,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          $ref: "#/components/responses/RateLimited"
         "501":
           description: Method not implemented.
           content:
@@ -299,6 +313,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          $ref: "#/components/responses/RateLimited"
         "501":
           description: Method not implemented.
           content:
@@ -392,6 +408,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          $ref: "#/components/responses/RateLimited"
         "501":
           description: Method not implemented.
           content:
@@ -434,6 +452,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          $ref: "#/components/responses/RateLimited"
         "501":
           description: Method not implemented.
           content:
@@ -484,6 +504,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          $ref: "#/components/responses/RateLimited"
         "501":
           description: Method not implemented.
           content:
@@ -522,6 +544,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          $ref: "#/components/responses/RateLimited"
         "501":
           description: Method not implemented.
           content:
@@ -566,6 +590,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          $ref: "#/components/responses/RateLimited"
         "501":
           description: Method not implemented.
           content:
@@ -610,6 +636,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          $ref: "#/components/responses/RateLimited"
         "501":
           description: Method not implemented.
           content:
@@ -624,6 +652,28 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Bearer token authentication. Registries MAY require this scheme according to their access policy; public endpoints MAY allow unauthenticated requests.
+  responses:
+    RateLimited:
+      description: Request rate limit exceeded; no authorization or recognition result was returned.
+      headers:
+        Retry-After:
+          description: Time to wait before retrying, expressed as allowed by HTTP.
+          schema:
+            type: string
+        Cache-Control:
+          description: Cache control directive; `no-store` reinforces that HTTP 429 responses must not be cached.
+          schema:
+            type: string
+            example: no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            type: about:blank
+            title: Too Many Requests
+            status: 429
+            detail: The request rate limit has been exceeded.
   schemas:
     
 

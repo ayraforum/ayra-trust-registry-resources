@@ -15,7 +15,7 @@ This directory contains guides to help you implement and interact with the Ayra 
 - Process for registering your ecosystem with Ayra
 - Steps for performing authority queries as a verifier
 - Ayra extension endpoints for discovery and lookup
-- Error handling with RFC 7807 Problem Details
+- Error handling with RFC 7807 Problem Details, HTTP 429 rate limiting, and guidance for possible future RFC 9457 alignment
 - Security considerations
 
 ## Usage

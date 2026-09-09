@@ -13,8 +13,8 @@ import sys
 import requests
 
 
-CORE_EXPECTED_STATUSES = {200, 400, 401, 404}
-OPTIONAL_EXPECTED_STATUSES = {200, 401, 404, 501}
+CORE_EXPECTED_STATUSES = {200, 400, 401, 404, 429}
+OPTIONAL_EXPECTED_STATUSES = {200, 401, 404, 429, 501}
 
 
 def build_headers(bearer_token):
@@ -69,6 +69,25 @@ def request_json(method, url, headers, expected_statuses, **kwargs):
     if content_type != "application/problem+json":
         print(f"    Expected application/problem+json error response, received {content_type or 'no Content-Type'}.")
         return False, None
+
+    try:
+        problem = response.json()
+    except ValueError as ex:
+        print(f"    Expected a JSON Problem Details response: {ex}")
+        return False, None
+    if not isinstance(problem, dict):
+        print("    Expected a Problem Details JSON object.")
+        return False, None
+    if problem.get("status", response.status_code) != response.status_code:
+        print("    Problem Details status does not match the HTTP status code.")
+        return False, None
+    if response.status_code == 429:
+        if "authorized" in problem or "recognized" in problem:
+            print("    A 429 response must not include authorization or recognition result fields.")
+            return False, None
+        retry_after = response.headers.get("Retry-After")
+        if retry_after:
+            print(f"    Retry-After: {retry_after}")
     return True, None
 
 

@@ -2,6 +2,14 @@
 
 This repository contains the Ayra Trust Registry Query Protocol (TRQP) Profile: the API specification, profile requirements, schemas, guides, and smoke tests needed to expose or consume Ayra-compatible trust registry services.
 
+# Core Principle
+
+> The registry **informs** the decision.
+>
+> The relying party **makes** the decision.
+
+TRQP provides authorization and recognition information. It does not make a relying party's trust, acceptance, or transaction decision.
+
 TRQP answers two core questions for verifiers and ecosystems:
 
 - **Authorization:** Is this entity authorized to perform this action on this resource under this authority?
@@ -17,7 +25,8 @@ Ayra-conformant Trust Registries:
 
 - **MUST** implement both TRQP core endpoints: `POST /authorization` and `POST /recognition`.
 - **MUST** use TRQP's `_id` field names, with Ayra `_id` values represented as DID URI strings.
-- **MUST** return RFC 7807 Problem Details for error responses.
+- **MUST** return RFC 7807 Problem Details using `application/problem+json` for error responses, as required by TRQP v2.0. RFC 9457 forward compatibility is documented in the profile but is not a current requirement.
+- **MAY** apply rate limits; rate-limit responses use HTTP 429 with RFC 7807 Problem Details and do not provide authorization or recognition information.
 - **MAY** implement Ayra extension endpoints for metadata, entity discovery, ecosystem discovery, and lookups.
 - **MUST** return HTTP 501 with Problem Details when an optional Ayra extension endpoint is not implemented.
 - **SHOULD** sign responses with JWS where supported; the signing mechanism is still being finalized.

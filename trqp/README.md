@@ -23,3 +23,5 @@ The `schema/` directory contains JSON Schema files aligned with TRQP v2.0's PARC
 ## Items for Future TRQP Consideration
 
 - **Metadata endpoint:** TRQP v2.0 does not define an explicit `/metadata` endpoint. Ayra defines this as a profile extension. A future TRQP version may benefit from a standardized metadata query type.
+- **Problem Details version:** TRQP v2.0 normatively references RFC 7807. RFC 9457 has since obsoleted RFC 7807 at the IETF level. The current Ayra profile retains RFC 7807 for TRQP v2.0 conformance and records RFC 9457 as a possible future, explicitly versioned alignment topic.
+- **Operational errors:** The Ayra profile defines HTTP 429 rate-limit handling as an additive profile behavior. Its Problem Details representation conforms to RFC 7807 and is also compatible with RFC 9457; this does not change the normative TRQP v2.0 reference.
